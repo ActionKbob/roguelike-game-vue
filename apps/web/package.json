@@ -11,7 +11,9 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "ui": "*",
+    "core": "*",
+    "pinia": "^3.0.4",
+    "tailwind-config": "*",
     "vue": "^3.4.21"
   },
   "devDependencies": {

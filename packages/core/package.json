@@ -1,0 +1,24 @@
+{
+  "name": "core",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+	"imports": {
+    "#*": "./src/*"
+  },
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+		"tailwind-config": "*",
+    "eslint-config-custom": "*",
+    "tsconfig": "*",
+    "vue": "^3.4.21"
+  },
+  "dependencies": {
+    "bitecs": "github:NateTheGreatt/bitECS#rc-0-4-0",
+    "phaser": "^3.90.0",
+    "pinia": "^3.0.4"
+  }
+}

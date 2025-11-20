@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Page } from "ui";
-import { name } from "../package.json";
+	import { GameWindow } from 'core';
 </script>
 
 <template>
-  <Page :app-name="name" />
+  <div>
+		<GameWindow/>
+	</div>
 </template>
