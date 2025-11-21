@@ -17,7 +17,7 @@ export class GameplayScene extends Scene
 	protected systems : SystemPipeline;
 
 	protected blitters : Map<Spritesheet, GameObjects.Blitter> = new Map();
-	get Blitters() {
+	get Blitters() :  Map<Spritesheet, GameObjects.Blitter> {
 		return this.blitters;
 	}
 
@@ -35,11 +35,10 @@ export class GameplayScene extends Scene
 
 		this.blitters.set( Spritesheet.DUNGEON, this.add.blitter( 0, 0, 'dungeon' ) );
 		this.blitters.set( Spritesheet.SHIP, this.add.blitter( 0, 0, 'ship' ) );
-
 		this.systems.add( { name : 'render', func : RenderSystem( this.world ) } );
 	}
 
 	update( time : number, delta : number ) : void {
-		this.systems.run( this.world );
+		this.systems.run( this );
 	}
 }

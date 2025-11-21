@@ -1,4 +1,4 @@
-import { addComponent, addEntity } from "bitecs";
+import { addComponent, addComponents, addEntity, setComponent } from "bitecs";
 import { GameplayScene } from "./gameplay-scene";
 import { Position, Renderable } from "../ecs/components";
 import { Spritesheet } from "#game/types.js";
@@ -7,7 +7,7 @@ export class SpaceScene extends GameplayScene
 {
 	constructor()
 	{
-		super( 'ship' );
+		super( 'space' );
 	}
 
 	init() : void
@@ -18,8 +18,7 @@ export class SpaceScene extends GameplayScene
 
 		const playerShipEntity = addEntity( this.world );
 
-		addComponent( this.world, playerShipEntity, Renderable );
-		addComponent( this.world, playerShipEntity, Position );
+		addComponents( this.world, playerShipEntity, Renderable, Position );
 
 		Renderable.texture[ playerShipEntity ] = Spritesheet.SHIP;
 		Renderable.frame[ playerShipEntity ] = 3;

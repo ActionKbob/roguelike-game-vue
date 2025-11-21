@@ -2,6 +2,7 @@
   import { onMounted, ref } from 'vue';
 	import Phaser from 'phaser';
 	import { PreloadScene, SpaceScene } from '#game/scenes';
+import { MapScene } from '#game/scenes/map-scene.js';
 
 
 	const gameContainer = ref( null as HTMLDivElement | null );
@@ -11,7 +12,7 @@
 	onMounted( () => {
 		gameRef.value = new Phaser.Game( {
 			parent : gameContainer.value,
-			backgroundColor : "#1a5c85",
+			backgroundColor : "#1A5C85",
 			scale : {
 				mode : Phaser.Scale.ScaleModes.ENVELOP,
 				width  : window.innerWidth / 3,
@@ -21,7 +22,8 @@
 			antialias : false,
 			scene : [
 				PreloadScene,
-				SpaceScene
+				SpaceScene,
+				MapScene
 			],
 			fps : {
 				limit : 144

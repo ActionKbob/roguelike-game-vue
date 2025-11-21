@@ -62,6 +62,6 @@ export class PreloadScene extends Scene
 
 	create()
 	{
-		this.scene.start( 'ship' )
+		this.scene.start( 'space' )
 	}
 }

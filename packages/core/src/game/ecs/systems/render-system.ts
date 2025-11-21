@@ -4,22 +4,22 @@ import { useGameState } from "#store/game-state";
 import { observe, onAdd, onRemove, query, type World } from "bitecs";
 import type { GameObjects } from "phaser";
 import { Position, Renderable } from "../components";
+import type { SystemType } from "#game/utilities.js";
 
-export function RenderSystem( _world : World ) : System
+export function RenderSystem( _world : World ) : SystemType
 {
 
 	const displayObjectMap : Map<number, GameObjects.Bob | GameObjects.Sprite> = new Map();
 
 	const gameState = useGameState();
-	const gameplayScene = gameState.currentScene as GameplayScene;
-
+	
 	const enterQuery : integer[] = [];
 	const exitQuery : integer[] = [];
-
+	
 	observe( _world, onAdd( Renderable, Position ), ( eid : integer ) => enterQuery.push( eid ) );
 	observe( _world, onRemove( Renderable ), ( eid : integer ) => exitQuery.push( eid ) );
-	console.log('1')
-	return ( _world : World<{}> ) => {
+	
+	return ( _world : World<{}>, _scene : GameplayScene ) => {
 
 		const entered = enterQuery.splice(0);
 		const exited = exitQuery.splice(0);
@@ -28,7 +28,7 @@ export function RenderSystem( _world : World ) : System
 		{
 			if( !displayObjectMap.has( eid ) )
 			{
-				const blitterObject = gameplayScene.Blitters.get( Renderable.texture[ eid ] );
+				const blitterObject = _scene.Blitters.get( Renderable.texture[ eid ] );
 				displayObjectMap.set( eid, blitterObject?.create( 0, 0, Renderable.frame[ eid ]  ) as GameObjects.Bob );
 			}
 		}

@@ -1,27 +1,30 @@
 import type { World } from "bitecs";
+import type { GameplayScene } from "./scenes/gameplay-scene";
 
-type System = {
-	name : string, 
-	func : ( _world : World ) => {}
-}
+export type SystemType = ( _world : World, _scene : GameplayScene ) => {}
+
+// type System = {
+// 	name : string, 
+// 	func : ( _world : World ) => {}
+// }
 export class SystemPipeline
 {
 	
-	systemMap : Map<string, ( _world : World ) => {}> = new Map();
-	systems: Array<( world: World ) => World> = [];
+	systemMap : Map<string, SystemType> = new Map();
+	systems: Array<SystemType> = [];
 
-	add( _system : System | Array<System> ) : void
+	add( _system : { name : string, func : SystemType } | Array<{ name : string, func : SystemType }> ) : void
 	{
-		if ( ( _system as System[] ).length ) 
+		if ( ( _system as { name : string, func : SystemType }[] ).length ) 
 		{
-			for( const s of ( _system as System[] ) )
+			for( const s of ( _system as { name : string, func : SystemType }[] ) )
 			{
 				this.add( s );
 			}
 		}
 		else
 		{
-			const s = _system as System;
+			const s = _system as { name : string, func : SystemType };
 			if( !this.systemMap.has( s.name ) )
 				this.systemMap.set(  s.name, s.func );
 			
@@ -39,11 +42,11 @@ export class SystemPipeline
 		this.systems = Array.from( this.systemMap.values() );
 	}
 
-	run( _world : World ) : World
+	run( _scene : GameplayScene ) : World
 	{
 		return this.systems.reduce(
-			( currentWorld, system ) => system( currentWorld ),
-			_world
+			( currentWorld, system ) => system( currentWorld, _scene ),
+			_scene.World
 		);
 	}
 }
