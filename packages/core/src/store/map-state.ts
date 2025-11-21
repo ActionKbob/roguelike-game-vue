@@ -17,4 +17,4 @@ export const useMapState = defineStore( 'map-state', {
 	actions : {
 		
 	}
-} )
+} );

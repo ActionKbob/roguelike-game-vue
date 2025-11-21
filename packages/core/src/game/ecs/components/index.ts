@@ -1,14 +1,11 @@
-export const Position = {
-	x : [] as number[],
-	y : [] as number[]
-}
+import {
+	f32,
+	u8,
+	u16,	
+	i32
+} from 'bitecs/serialization';
 
-export const Renderable = {
-	texture : [] as number[],
-	frame : [] as number[]
-}
+export const Position = { x: f32([]), y: f32([]) };
+export const Renderable = { texture: u8([]), frame: u16([]) };
 
-export const MapMarker = {
-	x : [] as integer[],
-	y : [] as integer[]
-}
+export const MapMarker = { x: i32([]), y: i32([]) };

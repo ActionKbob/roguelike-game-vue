@@ -1,8 +1,8 @@
-import type { GameplayScene } from "#game/scenes/gameplay-scene.js";
-import type { System } from "#game/types.js";
-import { useGameState } from "#store/game-state.js";
+import type { GameplayScene } from "#game/scenes/gameplay-scene";
+import type { System } from "#game/types";
+import { useGameState } from "#store/game-state";
 import { observe, onAdd, onRemove, query, type World } from "bitecs";
-import type { GameObjects, Scene } from "phaser";
+import type { GameObjects } from "phaser";
 import { Position, Renderable } from "../components";
 
 export function RenderSystem( _world : World ) : System
@@ -18,7 +18,7 @@ export function RenderSystem( _world : World ) : System
 
 	observe( _world, onAdd( Renderable, Position ), ( eid : integer ) => enterQuery.push( eid ) );
 	observe( _world, onRemove( Renderable ), ( eid : integer ) => exitQuery.push( eid ) );
-
+	console.log('1')
 	return ( _world : World<{}> ) => {
 
 		const entered = enterQuery.splice(0);
@@ -38,6 +38,7 @@ export function RenderSystem( _world : World ) : System
 			const displayObject = displayObjectMap.get( eid );
 			if( displayObject )
 			{
+				
 				displayObject.x = Position.x[ eid ];
 				displayObject.y = Position.y[ eid ];
 			}
