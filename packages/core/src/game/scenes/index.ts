@@ -1,4 +1,4 @@
 import { PreloadScene } from "./preload-scene";
-import { ShipScene } from "./ship-scene";
+import { SpaceScene } from "./space-scene";
 
-export { PreloadScene, ShipScene };
+export { PreloadScene, SpaceScene };

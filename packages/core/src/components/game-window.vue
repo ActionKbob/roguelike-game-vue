@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { onMounted, ref } from 'vue';
 	import Phaser from 'phaser';
-	import { PreloadScene, ShipScene } from '#game/scenes';
+	import { PreloadScene, SpaceScene } from '#game/scenes';
 
 
 	const gameContainer = ref( null as HTMLDivElement | null );
@@ -21,7 +21,7 @@
 			antialias : false,
 			scene : [
 				PreloadScene,
-				ShipScene
+				SpaceScene
 			],
 			fps : {
 				limit : 144

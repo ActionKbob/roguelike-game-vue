@@ -3,7 +3,7 @@ import { GameplayScene } from "./gameplay-scene";
 import { Position, Renderable } from "../ecs/components";
 import { Spritesheet } from "#game/types.js";
 
-export class ShipScene extends GameplayScene
+export class SpaceScene extends GameplayScene
 {
 	constructor()
 	{
