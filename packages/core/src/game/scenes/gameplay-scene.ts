@@ -3,7 +3,7 @@ import { SystemPipeline } from "#game/utilities.js";
 import { useGameState } from "#store/game-state.js";
 import { createWorld, type World } from "bitecs";
 import { GameObjects, Scene } from "phaser";
-import { MapMarkerSystem, RenderSystem } from "../ecs/systems";
+import { RenderSystem } from "../ecs/systems";
 
 export class GameplayScene extends Scene
 {
@@ -19,6 +19,12 @@ export class GameplayScene extends Scene
 	protected blitters : Map<Spritesheet, GameObjects.Blitter> = new Map();
 	get Blitters() :  Map<Spritesheet, GameObjects.Blitter> {
 		return this.blitters;
+	}
+
+	protected displayObjectMap : Map<number, GameObjects.Bob | GameObjects.Sprite> = new Map();
+	public get DisplayObjectMap()
+	{
+		return this.displayObjectMap;
 	}
 
 	constructor( key : string = 'gameplay' ) {

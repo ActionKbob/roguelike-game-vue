@@ -9,8 +9,6 @@ import type { SystemType } from "#game/utilities.js";
 export function RenderSystem( _world : World ) : SystemType
 {
 
-	const displayObjectMap : Map<number, GameObjects.Bob | GameObjects.Sprite> = new Map();
-
 	const gameState = useGameState();
 	
 	const enterQuery : integer[] = [];
@@ -21,21 +19,23 @@ export function RenderSystem( _world : World ) : SystemType
 	
 	return ( _world : World<{}>, _scene : GameplayScene ) => {
 
+		const { DisplayObjectMap } = _scene;
+
 		const entered = enterQuery.splice(0);
 		const exited = exitQuery.splice(0);
 
 		for( const eid of entered )
 		{
-			if( !displayObjectMap.has( eid ) )
+			if( !DisplayObjectMap.has( eid ) )
 			{
 				const blitterObject = _scene.Blitters.get( Renderable.texture[ eid ] );
-				displayObjectMap.set( eid, blitterObject?.create( 0, 0, Renderable.frame[ eid ]  ) as GameObjects.Bob );
+				DisplayObjectMap.set( eid, blitterObject?.create( 0, 0, Renderable.frame[ eid ]  ) as GameObjects.Bob );
 			}
 		}
 
 		for( const eid of query( _world, [ Renderable, Position ] ) )
 		{
-			const displayObject = displayObjectMap.get( eid );
+			const displayObject = DisplayObjectMap.get( eid );
 			if( displayObject )
 			{
 				

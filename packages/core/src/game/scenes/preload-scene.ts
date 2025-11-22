@@ -15,7 +15,7 @@ export const TEXTURE_ARRAY : Array< Texure > = [
 	{
 		name : 'dungeon',
 		type : Spritesheet.DUNGEON,
-		path :'http://localhost:6969/api/images/tilemap_packed.png',
+		path :'tilemap_packed.png',
 		frameSize : {
 			width : 16,
 			height : 16
@@ -24,7 +24,7 @@ export const TEXTURE_ARRAY : Array< Texure > = [
 	{
 		name : 'ship',
 		type : Spritesheet.SHIP,
-		path : 'http://localhost:6969/api/images/ships_packed.png',
+		path : 'ships_packed.png',
 		frameSize : {
 			width : 32,
 			height : 32
@@ -46,6 +46,9 @@ export class PreloadScene extends Scene
 
 	preload() : void
 	{
+
+		this.load.setBaseURL( 'http://localhost:6969/api/images' )
+
 		for( const texture of TEXTURE_ARRAY )
 		{
 			console.log( `Loading ${ texture.name } texture` )
