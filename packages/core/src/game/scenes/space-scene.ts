@@ -33,7 +33,6 @@ export class SpaceScene extends GameplayScene
 	}
 
 	update(time: number, delta: number): void {
-		
 		super.update( time, delta );
 	}
 }

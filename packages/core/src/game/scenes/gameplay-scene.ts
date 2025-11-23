@@ -22,9 +22,15 @@ export class GameplayScene extends Scene
 	}
 
 	protected displayObjectMap : Map<number, GameObjects.Bob | GameObjects.Sprite> = new Map();
-	public get DisplayObjectMap()
+	get DisplayObjectMap()
 	{
 		return this.displayObjectMap;
+	}
+
+	protected deltaTime : number = 0;
+	get DeltaTime() : number
+	{
+		return this.deltaTime;
 	}
 
 	constructor( key : string = 'gameplay' ) {
@@ -45,6 +51,7 @@ export class GameplayScene extends Scene
 	}
 
 	update( time : number, delta : number ) : void {
+		this.deltaTime = delta / 100;
 		this.systems.run( this );
 	}
-}
+}	
