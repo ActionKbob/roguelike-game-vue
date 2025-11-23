@@ -11,4 +11,7 @@ export const Rotation = { value : f32([]) };
 
 export const Renderable = { texture: u8([]), frame: u16([]) };
 
+export const Sprite = {};
+export const Blitter = {};
+
 export const MapMarker = { x: i32([]), y: i32([]) };

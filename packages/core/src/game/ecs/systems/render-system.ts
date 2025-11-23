@@ -1,9 +1,9 @@
 import type { GameplayScene } from "#game/scenes/gameplay-scene";
 import type { System } from "#game/types";
 import { useGameState } from "#store/game-state";
-import { observe, onAdd, onRemove, query, type World } from "bitecs";
+import { hasComponent, observe, onAdd, onRemove, query, type World } from "bitecs";
 import type { GameObjects } from "phaser";
-import { Position, Renderable } from "../components";
+import { Position, Renderable, Rotation } from "../components";
 import type { SystemType } from "#game/utilities.js";
 
 export function RenderSystem( _world : World ) : SystemType
@@ -28,8 +28,18 @@ export function RenderSystem( _world : World ) : SystemType
 		{
 			if( !DisplayObjectMap.has( eid ) )
 			{
-				const blitterObject = _scene.Blitters.get( Renderable.texture[ eid ] );
-				DisplayObjectMap.set( eid, blitterObject?.create( 0, 0, Renderable.frame[ eid ]  ) as GameObjects.Bob );
+				if( hasComponent( _world, eid, Rotation ) )
+				{
+					const spriteObject = _scene.add.sprite( 0, 0, 'ship' );
+					spriteObject.setFrame( Renderable.frame[ eid ] );
+					_scene.DisplayObjectMap.set( eid, spriteObject );
+				}
+				else
+				{
+					const blitterObject = _scene.Blitters.get( Renderable.texture[ eid ] );
+					DisplayObjectMap.set( eid, blitterObject?.create( 0, 0, Renderable.frame[ eid ]  ) as GameObjects.Bob );
+				}
+
 			}
 		}
 

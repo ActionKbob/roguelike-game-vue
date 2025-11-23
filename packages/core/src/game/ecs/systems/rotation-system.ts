@@ -3,6 +3,7 @@ import type { System } from "#game/types.js";
 import { useGameState } from "#store/game-state.js";
 import { query, type World } from "bitecs";
 import { Renderable, Rotation } from "../components";
+import type { GameObjects } from "phaser";
 
 export function RotationSystem( _world : World ) : System
 {
@@ -15,7 +16,11 @@ export function RotationSystem( _world : World ) : System
 
 		for( const eid of query( _world, [ Rotation, Renderable ] ) )
 		{
-			
+			const displayObject = DisplayObjectMap.get( eid );
+			if( displayObject )
+			{
+				( displayObject as GameObjects.Sprite).rotation = Rotation.value[ eid ];
+			}
 		}
 
 		return _world;
