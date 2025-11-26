@@ -28,11 +28,11 @@ export function VelocitySystem( _world : World ) : System
 			}
 			else
 			{
-				console.log( Velocity.friction[ eid ] , DeltaTime, Velocity.friction[ eid ] * DeltaTime )
+				console.log( Velocity.friction[ eid ] , DeltaTime, Velocity.friction[ eid ] * DeltaTime );
 				Velocity.value.x[ eid ] *= 1 - ( Velocity.friction[ eid ] * DeltaTime );
 				Velocity.value.y[ eid ] *= 1 - ( Velocity.friction[ eid ] * DeltaTime );
 			}
-			
+
 			Velocity.acceleration.x[ eid ] = 0;
 			Velocity.acceleration.y[ eid ] = 0;
 

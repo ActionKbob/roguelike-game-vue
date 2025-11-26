@@ -39,7 +39,7 @@ export class SpaceScene extends GameplayScene
 		Velocity.value.y[playerShipEntity] = 0;
 		Velocity.acceleration.x[playerShipEntity] = 0;
 		Velocity.acceleration.y[playerShipEntity] = 0;
-		Velocity.friction[playerShipEntity] = 0.1;
+		Velocity.friction[playerShipEntity] = 0.12;
 
 		Rotation.value[ playerShipEntity ] = 0;
 	}
