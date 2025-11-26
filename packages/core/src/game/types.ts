@@ -7,3 +7,18 @@ export enum Spritesheet {
 	DUNGEON,
 	SHIP
 }
+
+export enum InputAction {
+
+	NULL,
+
+	// Ship Actions
+	SHIP_THRUST,
+	SHIP_ROTATE_RIGHT,
+	SHIP_ROTATE_LEFT
+
+}
+
+export type KeyBinding = {
+	[ action in InputAction ]? : string
+}

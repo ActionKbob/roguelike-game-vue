@@ -3,10 +3,6 @@ import type { GameplayScene } from "./scenes/gameplay-scene";
 
 export type SystemType = ( _world : World, _scene : GameplayScene ) => {}
 
-// type System = {
-// 	name : string, 
-// 	func : ( _world : World ) => {}
-// }
 export class SystemPipeline
 {
 	
@@ -49,4 +45,9 @@ export class SystemPipeline
 			_scene.World
 		);
 	}
+}
+
+export function degToRad( _angle : number ) : number
+{
+  return _angle * ( Math.PI / 180 );
 }

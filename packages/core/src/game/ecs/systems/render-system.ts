@@ -1,9 +1,8 @@
-import type { GameplayScene } from "#game/scenes/gameplay-scene";
-import type { System } from "#game/types";
-import { useGameState } from "#store/game-state";
-import { hasComponent, observe, onAdd, onRemove, query, type World } from "bitecs";
 import type { GameObjects } from "phaser";
-import { Position, Renderable, Rotation } from "../components";
+import { hasComponent, observe, onAdd, onRemove, query, type World } from "bitecs";
+import { useGameState } from "#store/game-state";
+import type { GameplayScene } from "#game/scenes/gameplay-scene";
+import { Position, Renderable, Rotation } from "#game/ecs/components";
 import type { SystemType } from "#game/utilities.js";
 
 export function RenderSystem( _world : World ) : SystemType

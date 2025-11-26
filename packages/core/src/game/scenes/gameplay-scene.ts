@@ -4,10 +4,16 @@ import { useGameState } from "#store/game-state.js";
 import { createWorld, type World } from "bitecs";
 import { GameObjects, Scene } from "phaser";
 import { RenderSystem } from "../ecs/systems";
+import { useInputBindingsState } from "#store/input-bindings-state.js";
 
 export class GameplayScene extends Scene
 {
-	private gameState = useGameState();	
+	private gameState = useGameState();
+	private inputState = useInputBindingsState();
+	get InputState()
+	{
+		return this.inputState;
+	}
 
 	protected world : World;
 	get World() : World {
@@ -37,6 +43,7 @@ export class GameplayScene extends Scene
 		super( key );
 
 		this.gameState.setScene( this ); 
+		
 
 		this.world = createWorld();
 		this.systems = new SystemPipeline();
@@ -44,6 +51,9 @@ export class GameplayScene extends Scene
 
 	init() {
 		console.log( `...${ this.scene.key } scene init...` );
+
+		this.input.keyboard?.on( "keydown", this.handleKeyDown );
+		this.input.keyboard?.on( "keyup", this.handleKeyUp );
 
 		this.blitters.set( Spritesheet.DUNGEON, this.add.blitter( 0, 0, 'dungeon' ) );
 		this.blitters.set( Spritesheet.SHIP, this.add.blitter( 0, 0, 'ship' ) );
@@ -53,5 +63,14 @@ export class GameplayScene extends Scene
 	update( time : number, delta : number ) : void {
 		this.deltaTime = delta / 100;
 		this.systems.run( this );
+
+	}
+
+	handleKeyDown = ( _event : KeyboardEvent ) : void => {
+		this.inputState.addActiveAction( _event.code );
+	}
+
+	handleKeyUp = ( _event : KeyboardEvent ) : void => {
+		this.inputState.removeActiveAction( _event.code );
 	}
 }	

@@ -1,8 +1,10 @@
-import { addComponent, addComponents, addEntity, setComponent } from "bitecs";
+import { addComponents, addEntity } from "bitecs";
 import { GameplayScene } from "./gameplay-scene";
-import { Position, Renderable, Rotation } from "../ecs/components";
+import { PlayerInput, Position, Renderable, Rotation, ShipControls, Velocity } from "../ecs/components";
 import { Spritesheet } from "#game/types.js";
 import { RotationSystem } from "#game/ecs/systems/rotation-system.js";
+import { ShipControlSystem } from "#game/ecs/systems/ship-control-system.js";
+import { VelocitySystem } from "#game/ecs/systems/velocity-system.js";
 
 export class SpaceScene extends GameplayScene
 {
@@ -15,19 +17,29 @@ export class SpaceScene extends GameplayScene
 	{
 		super.init();
 
-		this.systems.add( { name : "rotationSystem", func : RotationSystem( this.world ) } );
+		this.systems.add( [
+			{ name : "shipControlSystem", func : ShipControlSystem( this.world ) },
+			{ name : "rotationSystem", func : RotationSystem( this.world ) },
+			{ name : "velocitySystem", func : VelocitySystem( this.world ) },
+		] );
 
 		// This is all temporary until I figure out how to structure my prefabs
 
 		const playerShipEntity = addEntity( this.world );
 
-		addComponents( this.world, playerShipEntity, Rotation, Renderable, Position );
+		addComponents( this.world, playerShipEntity, Rotation, Renderable, Position, Velocity, PlayerInput, ShipControls );
 
 		Renderable.texture[ playerShipEntity ] = Spritesheet.SHIP;
 		Renderable.frame[ playerShipEntity ] = 3;
 
 		Position.x[playerShipEntity] = 50;
 		Position.y[playerShipEntity] = 50;
+
+		Velocity.value.x[playerShipEntity] = 0;
+		Velocity.value.y[playerShipEntity] = 0;
+		Velocity.acceleration.x[playerShipEntity] = 0;
+		Velocity.acceleration.y[playerShipEntity] = 0;
+		Velocity.friction[playerShipEntity] = 0.1;
 
 		Rotation.value[ playerShipEntity ] = 0;
 	}

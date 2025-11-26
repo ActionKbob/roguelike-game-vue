@@ -1,9 +1,9 @@
-import type { GameplayScene } from "#game/scenes/gameplay-scene.js";
-import type { System } from "#game/types.js";
-import { useGameState } from "#store/game-state.js";
-import { query, type World } from "bitecs";
-import { Renderable, Rotation } from "../components";
 import type { GameObjects } from "phaser";
+import { query, type World } from "bitecs";
+import type { GameplayScene } from "#game/scenes/gameplay-scene.js";
+import { useGameState } from "#store/game-state.js";
+import { Renderable, Rotation } from "#game/ecs/components";
+import type { System } from "#game/types.js";
 
 export function RotationSystem( _world : World ) : System
 {
