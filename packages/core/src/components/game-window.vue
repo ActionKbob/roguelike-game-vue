@@ -4,6 +4,7 @@
 	import { PreloadScene, SpaceScene } from '#game/scenes';
 	import { MapScene } from '#game/scenes/map-scene.js';
 	import { useInputBindingsState } from '#store/input-bindings-state.js';
+import { useNetworkState } from '#store/network-state.js';
 
 	const inputBindingsState = useInputBindingsState();
 
