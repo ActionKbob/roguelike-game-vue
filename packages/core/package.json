@@ -1,5 +1,5 @@
 {
-  "name": "core",
+  "name": "@repo/core",
   "version": "0.0.0",
   "private": true,
   "main": "./index.ts",
@@ -12,6 +12,7 @@
   },
   "devDependencies": {
 		"tailwind-config": "*",
+		"store": "*",
     "eslint-config-custom": "*",
     "tsconfig": "*",
     "vue": "^3.4.21"

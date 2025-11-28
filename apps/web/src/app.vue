@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { GameWindow } from 'core';
+	import { GameWindow } from 'core';	
 </script>
 
 <template>

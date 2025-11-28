@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "core": "*",
+		"store": "*",
     "pinia": "^3.0.4",
     "tailwind-config": "*",
     "vue": "^3.4.21"
