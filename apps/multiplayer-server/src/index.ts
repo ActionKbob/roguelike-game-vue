@@ -1,5 +1,5 @@
 import { ServerWebSocket } from 'bun';
-import { NETWORK_MESSAGE_TYPE, IMessage } from 'shared';
+import { NETWORK_MESSAGE_TYPE, NetworkMessage } from 'shared';
 
 const PORT = process.env.PORT || 5001;
 
@@ -37,7 +37,7 @@ const server = Bun.serve({
 		},
 		message( ws : ServerWebSocket, message : string | Buffer<ArrayBuffer> )
 		{
-			const { type, body } = JSON.parse( message as string ) as IMessage;
+			const { type, body } = JSON.parse( message as string ) as NetworkMessage;
 
 			switch ( type ) {
 				case NETWORK_MESSAGE_TYPE.CREATE_LOBBY :
@@ -54,7 +54,7 @@ const server = Bun.serve({
 					{
 						console.log( `Lobby ${ key } created...` );
 						ws.send( JSON.stringify( {
-							type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED,
+							type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
 							body : {
 								key,
 								isHost : true
@@ -65,7 +65,27 @@ const server = Bun.serve({
 					break;
 
 				case NETWORK_MESSAGE_TYPE.JOIN_LOBBY :
-					Lobbies.set( body as string, ws );
+
+					const lobbyKey : string = body as string;
+
+					if( Lobbies.has( lobbyKey ) )
+					{
+						Lobbies.set( body as string, ws );
+						ws.send( JSON.stringify( {
+							type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
+							body : {
+								key : lobbyKey
+							}
+						} as NetworkMessage ) )
+					}
+					else
+					{
+						ws.send( JSON.stringify( {
+							type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_FAILURE,
+							body : "Lobby does not exist"
+						} as NetworkMessage ) )
+					}
+
 					break;
 			}
 		}

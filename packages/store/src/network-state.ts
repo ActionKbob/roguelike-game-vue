@@ -23,11 +23,14 @@ export const useNetworkState = defineStore( 'network-state', {
 		} as NetworkState;
 	},
 	actions : {
-		connect : function( _url : string = "ws://localhost:5001", _lobbyKey? : string )
+		connect : function( _lobbyKey? : string )
 		{
+
+			const url : string = "ws://localhost:5001";
+
 			try
 			{
-				this.socket = new WebSocket( _url );
+				this.socket = new WebSocket( url );
 
 				this.status = NETWORK_STATUS.CONNECTING;
 
@@ -65,8 +68,7 @@ export const useNetworkState = defineStore( 'network-state', {
 		},
 		disconnect : function()
 		{
-			if( this.socket )
-				this.socket.close();
+			this.socket?.close();
 		},
 		handleMessage : async function( { data } : MessageEvent )
 		{
@@ -74,11 +76,17 @@ export const useNetworkState = defineStore( 'network-state', {
 
 			switch( type )
 			{
-				case NETWORK_MESSAGE_TYPE.LOBBY_JOINED :
+				case NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS :
 
 					this.lobbyKey = body.key;
-					this.isHost = body.isHost;
+					this.isHost = body.isHost || false;
 
+					break;
+
+				case NETWORK_MESSAGE_TYPE.LOBBY_JOINED_FAILURE :
+					this.socket?.close();
+					this.socket = null;
+					console.error( `Connection failed: ${ body }` )
 					break;
 			}
 		}

@@ -1,10 +1,11 @@
 export enum NETWORK_MESSAGE_TYPE {
 	CREATE_LOBBY,
 	JOIN_LOBBY,
-	LOBBY_JOINED
+	LOBBY_JOINED_SUCCESS,
+	LOBBY_JOINED_FAILURE
 }
 
-export interface IMessage {
+export type NetworkMessage = {
 	type : NETWORK_MESSAGE_TYPE,
 	body? : Object | string | number
 }
