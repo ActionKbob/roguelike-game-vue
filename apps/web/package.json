@@ -2,6 +2,7 @@
   "name": "web",
   "version": "0.0.0",
   "private": true,
+	"type": "module",
   "scripts": {
     "dev": "vite --port 3000",
     "build": "run-p check-types \"build-only {@}\" --",
@@ -11,10 +12,12 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.17",
     "core": "*",
-		"store": "*",
     "pinia": "^3.0.4",
+    "store": "*",
     "tailwind-config": "*",
+    "tailwindcss": "^4.1.17",
     "vue": "^3.4.21"
   },
   "devDependencies": {

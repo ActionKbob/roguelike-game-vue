@@ -13,7 +13,7 @@
   "devDependencies": {
 		"tailwind-config": "*",
 		"store": "*",
-    "eslint-config-custom": "*",
+		"shared": "*",
     "tsconfig": "*",
     "vue": "^3.4.21"
   },
