@@ -28,80 +28,79 @@ const server = Bun.serve({
 		return new Response( "Upgrade failed", { status : 500 } )
 	},
 	websocket : {
-		open( ws )
+		open( _ws )
 		{
 			console.log( 'Client CONNECTED' );
 			const newClientId = uuid();
 
-			const clientId = connectionManager.addConnection( ws );
+			const clientId = connectionManager.addConnection( _ws );
 
-			ws.send( JSON.stringify( {
+			_ws.send( JSON.stringify( {
 				type : NETWORK_MESSAGE_TYPE.CONNECTION_SUCCESS,
 				body : {
 					data : clientId
 				}
 			} as NetworkMessage ) );
 		},
-		close( ws )
+		close( _ws )
 		{
 			console.log( 'Client DISCONNECTED' );
-			connections.forEach( ( _socket, _id ) => {
-				if( _socket === ws )
-				{
-					connections.delete( _id );
-				}
-			} )
+			connectionManager.removeConnection( _ws );
 		},
-		message( ws : ServerWebSocket, message : string | Buffer<ArrayBuffer> )
+		message( _ws : ServerWebSocket, _message : string | Buffer<ArrayBuffer> )
 		{
-			const { type, body } = JSON.parse( message as string ) as NetworkMessage;
+			const { type, body } = JSON.parse( _message as string ) as NetworkMessage;
 
-			const client = connections.forEach( ( _socket, _id ) => (  ) )
+			const client = connectionManager.findConnectionKeyByValue( _ws );
 
 			let lobby : Lobby | undefined;
-			
 
 			switch ( type ) {
 				case NETWORK_MESSAGE_TYPE.CREATE_LOBBY :
 					
-					lobby = lobbyManager.createLobby(  );
-					
-					if( lobby )
-					{
-						ws.send( JSON.stringify( {
-							type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
-							body : {
-								data : {
-									key : lobby.key
-								}
-							}
-						} as NetworkMessage ) )
-					}
-					else
-					{
-						// Send failure
-					}
+					if( client )
+						lobby = lobbyManager.createLobby( client );
+						
+					handleLobbyJoinResponse( _ws, lobby );
 
 					break;
 
 				case NETWORK_MESSAGE_TYPE.JOIN_LOBBY :
 
-					lobby = lobbyManager.createLobby();
+					if( client )
+						lobby = lobbyManager.joinLobby( body?.data?.key, client )
 
-					if( lobby )
-					{
-						// Send success
-					}
-					else
-					{
-						// Send failure
-					}
+					handleLobbyJoinResponse( _ws, lobby );
 
 					break;
 			}
 		}
 	}
 });
+
+function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefined  )
+{
+	if( _lobby )
+	{
+		_ws.send( JSON.stringify( {
+			type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
+			body : {
+				data : {
+					key : _lobby.id
+				}
+			}
+		} as NetworkMessage ) );
+	}
+	else
+	{
+		_ws.send( JSON.stringify( {
+			type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_FAILURE,
+			body : {
+				message : "Failed to join lobby"
+			}
+		} as NetworkMessage ) );
+	}
+}
 
 const lobbyManager : LobbyManager = new LobbyManager();
 const connectionManager : ConnectionManager = new ConnectionManager();

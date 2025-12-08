@@ -78,8 +78,10 @@ export const useNetworkState = defineStore( 'network-state', {
 			{
 				case NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS :
 
-					this.lobbyKey = body.key;
-					this.isHost = body.isHost || false;
+					const { key, isHost } = body.data;
+
+					this.lobbyKey = key;
+					this.isHost = isHost || false;
 
 					break;
 

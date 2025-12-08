@@ -1,5 +1,5 @@
 import { v4 as uuid, } from 'uuid';
-import { Lobby } from "shared";
+import { Lobby, Peer } from "shared";
 
 const LOBBY_KEY_CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -24,23 +24,27 @@ export class LobbyManager
 
 		this.lobbies.set( id, newLobby );
 
-		this.addPeerToLobby( id, _clientId, true );
+		this.addPeerToLobby( newLobby, _clientId, true );
 
 		return newLobby;
 	}
 
-	joinLobby( _key : string ) : Lobby | undefined
+	joinLobby( _id : string, _clientId : string ) : Lobby | undefined
 	{
-		this.getLobbyByKey
+		const lobby = this.lobbies.get( _id );
 
-		this.addPeerToLobby( id, _clientId, true );
+		if( lobby )
+		{
+			this.addPeerToLobby( lobby, _clientId, true );
+			return lobby;
+		}
 
 		return undefined;
 	}
 
-	addPeerToLobby( _lobbyId : string, _peerId : string, _isHost : boolean = false )
+	addPeerToLobby( _lobby : Lobby, _peerId : string, _isHost : boolean = false )
 	{
-
+		_lobby.peers.set( _peerId, { id : _peerId, isHost : _isHost } as Peer )
 	}
 
 	private generateLobbyId( _length : number = 4 ) : string

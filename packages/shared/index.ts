@@ -14,7 +14,7 @@ export type NetworkMessage = {
 
 export interface Peer {
 	id : string,
-
+	isHost : boolean
 }
 
 export interface Lobby {

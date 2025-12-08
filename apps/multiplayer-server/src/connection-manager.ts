@@ -18,4 +18,23 @@ export class ConnectionManager
 
 		return clientId;
 	}
+
+	removeConnection( _ws : ServerWebSocket ) : void
+	{
+		const removeId = this.findConnectionKeyByValue( _ws );
+
+		if( removeId )
+			this.connections.delete( removeId );
+	}
+
+	findConnectionKeyByValue( _value : ServerWebSocket )
+	{
+		for( const [ key, value ] of this.connections.entries() )
+		{
+			if( value === _value )
+				return key;
+
+			return undefined;
+		}
+	}
 }
