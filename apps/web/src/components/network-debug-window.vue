@@ -19,7 +19,7 @@
 
 <template>
 	<div class="absolute text-white">
-		<input type="text" maxlength=4 :value="lobbyKey" @input="handleKeyInput">
+		<input type="text" maxlength=4 class="p-1 rounded border border-white outline-0" :value="lobbyKey" @input="handleKeyInput" v-if="networkState.status == NetworkStatus.DISCONNECTED" />
 		<div>
 			<button v-if="networkState.status == NetworkStatus.DISCONNECTED" v-on:click="() => { networkState.connect( lobbyKey ) }" >Connect</button>
 			<button v-if="networkState.status == NetworkStatus.CONNECTED" v-on:click="() => networkState.disconnect()" >Disconnect</button>

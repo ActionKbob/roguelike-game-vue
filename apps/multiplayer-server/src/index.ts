@@ -1,9 +1,10 @@
 import { ServerWebSocket } from 'bun';
-import { NETWORK_MESSAGE_TYPE, NetworkMessage } from 'shared';
+import { v4 as uuid } from 'uuid';
+import { Lobby, NETWORK_MESSAGE_TYPE, NetworkMessage } from 'shared';
+import { LobbyManager } from './lobby-manager';
+import { ConnectionManager } from './connection-manager';
 
 const PORT = process.env.PORT || 5001;
-
-const Lobbies : Map<string, ServerWebSocket> = new Map();
 
 const creatLobbyKey = ( _length : number ) => {
     const characterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -30,60 +31,70 @@ const server = Bun.serve({
 		open( ws )
 		{
 			console.log( 'Client CONNECTED' );
+			const newClientId = uuid();
+
+			const clientId = connectionManager.addConnection( ws );
+
+			ws.send( JSON.stringify( {
+				type : NETWORK_MESSAGE_TYPE.CONNECTION_SUCCESS,
+				body : {
+					data : clientId
+				}
+			} as NetworkMessage ) );
 		},
 		close( ws )
 		{
 			console.log( 'Client DISCONNECTED' );
+			connections.forEach( ( _socket, _id ) => {
+				if( _socket === ws )
+				{
+					connections.delete( _id );
+				}
+			} )
 		},
 		message( ws : ServerWebSocket, message : string | Buffer<ArrayBuffer> )
 		{
 			const { type, body } = JSON.parse( message as string ) as NetworkMessage;
 
+			const client = connections.forEach( ( _socket, _id ) => (  ) )
+
+			let lobby : Lobby | undefined;
+			
+
 			switch ( type ) {
 				case NETWORK_MESSAGE_TYPE.CREATE_LOBBY :
 					
-					let key = creatLobbyKey( 4 );
-
-					do
+					lobby = lobbyManager.createLobby(  );
+					
+					if( lobby )
 					{
-						Lobbies.set( key, ws );
-					}
-					while( !Lobbies.has( key ) );
-
-					if( Lobbies.has( key ) )
-					{
-						console.log( `Lobby ${ key } created...` );
 						ws.send( JSON.stringify( {
 							type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
 							body : {
-								key,
-								isHost : true
+								data : {
+									key : lobby.key
+								}
 							}
-						} ) );
+						} as NetworkMessage ) )
+					}
+					else
+					{
+						// Send failure
 					}
 
 					break;
 
 				case NETWORK_MESSAGE_TYPE.JOIN_LOBBY :
 
-					const lobbyKey : string = body as string;
+					lobby = lobbyManager.createLobby();
 
-					if( Lobbies.has( lobbyKey ) )
+					if( lobby )
 					{
-						Lobbies.set( body as string, ws );
-						ws.send( JSON.stringify( {
-							type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
-							body : {
-								key : lobbyKey
-							}
-						} as NetworkMessage ) )
+						// Send success
 					}
 					else
 					{
-						ws.send( JSON.stringify( {
-							type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_FAILURE,
-							body : "Lobby does not exist"
-						} as NetworkMessage ) )
+						// Send failure
 					}
 
 					break;
@@ -91,5 +102,8 @@ const server = Bun.serve({
 		}
 	}
 });
+
+const lobbyManager : LobbyManager = new LobbyManager();
+const connectionManager : ConnectionManager = new ConnectionManager();
 
 console.log( `WebSocket server running on ${server.hostname}:${server.port}` );
