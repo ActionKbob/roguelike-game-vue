@@ -33,8 +33,7 @@ export class ConnectionManager
 		{
 			if( value === _value )
 				return key;
-
-			return undefined;
 		}
+		return undefined;
 	}
 }

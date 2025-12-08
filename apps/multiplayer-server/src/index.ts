@@ -29,12 +29,11 @@ const server = Bun.serve({
 	},
 	websocket : {
 		open( _ws )
-		{
-			console.log( 'Client CONNECTED' );
-			const newClientId = uuid();
-
+		{			
 			const clientId = connectionManager.addConnection( _ws );
 
+			console.log( `Client ${ clientId } CONNECTED` );
+			
 			_ws.send( JSON.stringify( {
 				type : NETWORK_MESSAGE_TYPE.CONNECTION_SUCCESS,
 				body : {
@@ -45,6 +44,12 @@ const server = Bun.serve({
 		close( _ws )
 		{
 			console.log( 'Client DISCONNECTED' );
+
+			const client = connectionManager.findConnectionKeyByValue( _ws );
+
+			if( client )
+				lobbyManager.removePeerFromLobby( client );
+
 			connectionManager.removeConnection( _ws );
 		},
 		message( _ws : ServerWebSocket, _message : string | Buffer<ArrayBuffer> )
@@ -52,7 +57,7 @@ const server = Bun.serve({
 			const { type, body } = JSON.parse( _message as string ) as NetworkMessage;
 
 			const client = connectionManager.findConnectionKeyByValue( _ws );
-
+			
 			let lobby : Lobby | undefined;
 
 			switch ( type ) {
@@ -61,11 +66,13 @@ const server = Bun.serve({
 					if( client )
 						lobby = lobbyManager.createLobby( client );
 						
-					handleLobbyJoinResponse( _ws, lobby );
+					handleLobbyJoinResponse( _ws, lobby, true );
 
 					break;
 
 				case NETWORK_MESSAGE_TYPE.JOIN_LOBBY :
+
+					console.log(`Attempting to join ${body?.data?.key}`)
 
 					if( client )
 						lobby = lobbyManager.joinLobby( body?.data?.key, client )
@@ -78,7 +85,7 @@ const server = Bun.serve({
 	}
 });
 
-function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefined  )
+function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefined, _isHost : boolean = false  )
 {
 	if( _lobby )
 	{
@@ -86,7 +93,8 @@ function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefi
 			type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
 			body : {
 				data : {
-					key : _lobby.id
+					key : _lobby.id,
+					isHost : _isHost
 				}
 			}
 		} as NetworkMessage ) );

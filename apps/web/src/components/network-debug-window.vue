@@ -25,7 +25,8 @@
 			<button v-if="networkState.status == NetworkStatus.CONNECTED" v-on:click="() => networkState.disconnect()" >Disconnect</button>
 		</div>
 		<div v-if="networkState.status == NetworkStatus.CONNECTED && networkState.lobbyKey">
-			Lobby Key: {{ networkState.lobbyKey }}
+			<p>Lobby Key: {{ networkState.lobbyKey }}</p>
+			<p v-if="networkState.isHost">Host</p>
 		</div>
 		
 	</div>

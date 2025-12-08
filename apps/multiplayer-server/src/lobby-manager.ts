@@ -47,6 +47,30 @@ export class LobbyManager
 		_lobby.peers.set( _peerId, { id : _peerId, isHost : _isHost } as Peer )
 	}
 
+	removePeerFromLobby( _peerId : string )
+	{
+		const lobby = this.getLobbyByPeer( _peerId );
+
+		lobby?.peers.delete( _peerId );
+
+		if( lobby?.peers.size === 0 )
+		{
+			this.lobbies.delete( lobby.id );
+			console.warn( `Lobby ${ lobby.id } is empty, deleting lobby` );
+		}
+	}
+
+	getLobbyByPeer( _peerId : string )
+	{
+		for( const [ key, value ] of this.lobbies.entries() )
+		{
+			if( value.peers.has( _peerId ) )
+				return value;
+		}
+
+		return undefined;
+	}
+
 	private generateLobbyId( _length : number = 4 ) : string
 	{
     let result = '';
@@ -58,4 +82,5 @@ export class LobbyManager
 
     return result;
 	}
+	
 }

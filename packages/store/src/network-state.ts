@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { NETWORK_MESSAGE_TYPE } from 'shared';
+import { NETWORK_MESSAGE_TYPE, type NetworkMessage } from 'shared';
 
 export enum NETWORK_STATUS {
 	DISCONNECTED,
@@ -42,8 +42,12 @@ export const useNetworkState = defineStore( 'network-state', {
 					{
 						this.socket?.send( JSON.stringify( {
 							type : NETWORK_MESSAGE_TYPE.JOIN_LOBBY,
-							data : _lobbyKey
-						} ) );
+							body : {
+								data : {
+									key : _lobbyKey
+								}
+							}
+						} as NetworkMessage ) );
 					}
 					else
 					{
