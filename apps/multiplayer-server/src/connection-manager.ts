@@ -1,4 +1,5 @@
 import { ServerWebSocket } from "bun";
+import { MessageBody } from "shared";
 import { v4 as uuid } from 'uuid';
 
 export class ConnectionManager
@@ -35,5 +36,13 @@ export class ConnectionManager
 				return key;
 		}
 		return undefined;
+	}
+
+	sendMessageToClient( _clientId : string, _message : MessageBody )
+	{
+		const client = this.connections.get( _clientId );
+
+		if( client )
+			client.send( JSON.stringify( _message ) );
 	}
 }

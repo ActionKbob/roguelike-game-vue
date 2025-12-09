@@ -111,6 +111,6 @@ function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefi
 }
 
 const lobbyManager : LobbyManager = new LobbyManager();
-const connectionManager : ConnectionManager = new ConnectionManager();
+export const connectionManager : ConnectionManager = new ConnectionManager();
 
 console.log( `WebSocket server running on ${server.hostname}:${server.port}` );

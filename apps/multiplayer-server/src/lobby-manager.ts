@@ -1,5 +1,6 @@
 import { v4 as uuid, } from 'uuid';
-import { Lobby, Peer } from "shared";
+import { Lobby, MessageBody, NETWORK_MESSAGE_TYPE, Peer } from "shared";
+import { connectionManager } from '.';
 
 const LOBBY_KEY_CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -50,6 +51,22 @@ export class LobbyManager
 	removePeerFromLobby( _peerId : string )
 	{
 		const lobby = this.getLobbyByPeer( _peerId );
+
+		if( lobby?.peers.get( _peerId )?.isHost )
+		{
+			lobby?.peers.forEach( ( value, key ) => {
+				if( key !== _peerId )
+				{
+					console.log("TRYING TO DISCONNECT")
+					connectionManager.sendMessageToClient( key, {
+						type : NETWORK_MESSAGE_TYPE.HOST_LEFT,
+						body : {
+							message : "Host left the game"
+						}
+					} as MessageBody );
+				}
+			} )
+		}
 
 		lobby?.peers.delete( _peerId );
 

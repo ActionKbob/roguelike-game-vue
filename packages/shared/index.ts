@@ -4,12 +4,18 @@ export enum NETWORK_MESSAGE_TYPE {
 	JOIN_LOBBY,
 	LEAVE_LOBBY,
 	LOBBY_JOINED_SUCCESS,
-	LOBBY_JOINED_FAILURE
+	LOBBY_JOINED_FAILURE,
+	HOST_LEFT
+}
+
+export type MessageBody = { 
+	data? : any,
+	message? : string
 }
 
 export type NetworkMessage = {
 	type : NETWORK_MESSAGE_TYPE,
-	body? : { data? : any, message? : string }
+	body? : MessageBody
 }
 
 export interface Peer {

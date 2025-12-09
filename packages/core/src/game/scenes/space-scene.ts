@@ -32,8 +32,8 @@ export class SpaceScene extends GameplayScene
 		Renderable.texture[ playerShipEntity ] = Spritesheet.SHIP;
 		Renderable.frame[ playerShipEntity ] = 3;
 
-		Position.x[playerShipEntity] = 50;
-		Position.y[playerShipEntity] = 50;
+		Position.x[playerShipEntity] = Math.round( Math.random() * this.cameras.main.width );
+		Position.y[playerShipEntity] = Math.round( Math.random() * this.cameras.main.height );
 
 		Velocity.value.x[playerShipEntity] = 0;
 		Velocity.value.y[playerShipEntity] = 0;

@@ -91,9 +91,12 @@ export const useNetworkState = defineStore( 'network-state', {
 
 				case NETWORK_MESSAGE_TYPE.LOBBY_JOINED_FAILURE :
 					this.socket?.close();
-					this.socket = null;
 					console.error( `Connection failed: ${ body }` )
 					break;
+
+				case NETWORK_MESSAGE_TYPE.HOST_LEFT :
+					this.socket?.close();
+					console.log( 'Lobby Host left, leaving game' );
 			}
 		}
 	}
