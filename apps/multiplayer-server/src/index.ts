@@ -1,6 +1,6 @@
 import { ServerWebSocket } from 'bun';
 import { v4 as uuid } from 'uuid';
-import { Lobby, NETWORK_MESSAGE_TYPE, NetworkMessage } from 'shared';
+import { Lobby, NETWORK_REQUEST_TYPE, NETWORK_RESPONSE_TYPE, NetworkMessage } from 'shared';
 import { LobbyManager } from './lobby-manager';
 import { ConnectionManager } from './connection-manager';
 
@@ -35,7 +35,7 @@ const server = Bun.serve({
 			console.log( `Client ${ clientId } CONNECTED` );
 			
 			_ws.send( JSON.stringify( {
-				type : NETWORK_MESSAGE_TYPE.CONNECTION_SUCCESS,
+				type : NETWORK_RESPONSE_TYPE.CONNECTION_SUCCESS,
 				body : {
 					data : clientId
 				}
@@ -61,7 +61,7 @@ const server = Bun.serve({
 			let lobby : Lobby | undefined;
 
 			switch ( type ) {
-				case NETWORK_MESSAGE_TYPE.CREATE_LOBBY :
+				case NETWORK_REQUEST_TYPE.CREATE_LOBBY :
 					
 					if( client )
 						lobby = lobbyManager.createLobby( client );
@@ -70,7 +70,7 @@ const server = Bun.serve({
 
 					break;
 
-				case NETWORK_MESSAGE_TYPE.JOIN_LOBBY :
+				case NETWORK_REQUEST_TYPE.JOIN_LOBBY :
 
 					console.log(`Attempting to join ${body?.data?.key}`)
 
@@ -90,7 +90,7 @@ function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefi
 	if( _lobby )
 	{
 		_ws.send( JSON.stringify( {
-			type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
+			type : NETWORK_RESPONSE_TYPE.LOBBY_JOINED_SUCCESS,
 			body : {
 				data : {
 					key : _lobby.id,
@@ -102,7 +102,7 @@ function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefi
 	else
 	{
 		_ws.send( JSON.stringify( {
-			type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_FAILURE,
+			type : NETWORK_RESPONSE_TYPE.LOBBY_JOINED_FAILURE,
 			body : {
 				message : "Failed to join lobby"
 			}
