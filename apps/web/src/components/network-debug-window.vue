@@ -22,15 +22,15 @@
 		<div>
 			<p>Client ID &mdash; {{ networkState.clientId }}</p>
 		</div>
-		<div class="flex gap-6" v-if="networkState.status == NetworkStatus.CONNECTED && networkState.lobbyKey">
-			<div>
-				<p>Lobby :</p>
-				<p class="text-xl font-extrabold" :class="{ 'text-amber-300' : networkState.isHost }">{{ networkState.lobbyKey }}</p>
+		<div class="border p-4" v-if="networkState.status == NetworkStatus.CONNECTED && networkState.lobbyKey">
+			<p class="text-center mb-2">&mdash; Lobby &mdash;</p>
+			<div class="mb-4">
+				<p>Key : <span class="text-xl font-extrabold" :class="{ 'text-amber-300' : networkState.isHost }">{{ networkState.lobbyKey }}</span></p>
 			</div>
 			<div>
-				<p>Peers :</p>
+				<p>Members :</p>
 				<ul>
-					<li v-for="item in networkState.peers.values()">{{ item.id }}</li>
+					<li v-for="item in networkState.peers.values()">{{ item.id }} <span v-if="networkState.clientId === item.id">(You)</span></li>
 				</ul>
 			</div>
 		</div>
