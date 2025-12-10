@@ -18,16 +18,31 @@
 </script>
 
 <template>
-	<div class="absolute text-white">
-		<input type="text" maxlength=4 class="p-1 rounded border border-white outline-0" :value="lobbyKey" @input="handleKeyInput" v-if="networkState.status == NetworkStatus.DISCONNECTED" />
+	<div class="absolute flex flex-col text-white gap-4 p-4">
 		<div>
-			<button v-if="networkState.status == NetworkStatus.DISCONNECTED" v-on:click="() => { networkState.connect( lobbyKey ) }" >Connect</button>
-			<button v-if="networkState.status == NetworkStatus.CONNECTED" v-on:click="() => networkState.disconnect()" >Disconnect</button>
+			<p>Client ID &mdash; {{ networkState.clientId }}</p>
 		</div>
-		<div v-if="networkState.status == NetworkStatus.CONNECTED && networkState.lobbyKey">
-			<p>Lobby Key: {{ networkState.lobbyKey }}</p>
-			<p v-if="networkState.isHost">Host</p>
+		<div class="flex gap-6" v-if="networkState.status == NetworkStatus.CONNECTED && networkState.lobbyKey">
+			<div>
+				<p>Lobby :</p>
+				<p class="text-xl font-extrabold" :class="{ 'text-amber-300' : networkState.isHost }">{{ networkState.lobbyKey }}</p>
+			</div>
+			<div>
+				<p>Peers :</p>
+				<ul>
+					<li v-for="item in networkState.peers.values()">{{ item.id }}</li>
+				</ul>
+			</div>
 		</div>
-		
+		<div>
+			<div>
+				<div class="flex gap-4" v-if="networkState.status == NetworkStatus.DISCONNECTED" >
+					<button class="button" v-on:click="() => { networkState.connect( lobbyKey ) }" >Connect</button>
+					<input type="text" maxlength=4 class="p-1 rounded border border-white outline-0" :value="lobbyKey" @input="handleKeyInput" v-if="networkState.status == NetworkStatus.DISCONNECTED" />
+				</div>
+				<button class="button" v-else v-on:click="() => networkState.disconnect()" >Disconnect</button>
+			</div>
+		</div>
+				
 	</div>
 </template>

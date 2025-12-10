@@ -1,17 +1,17 @@
-export enum NETWORK_REQUEST_TYPE {
+export enum NETWORK_MESSAGE_TYPE {
+	// REQUEST
 	CREATE_LOBBY,
 	JOIN_LOBBY,
 	LEAVE_LOBBY,
-}
 
-export enum NETWORK_RESPONSE_TYPE {
+	// RESPONSE
 	CONNECTION_SUCCESS,
 	LOBBY_JOINED_SUCCESS,
 	LOBBY_JOINED_FAILURE,
-	HOST_LEFT
-}
+	CLIENT_JOINED,
+	CLIENT_LEFT,
 
-export enum WEBRTC_MESSAGE_TYPE {
+	// SIGNALING
 	OFFER,
 	ANSWER,
 	CANDIDATE
@@ -23,16 +23,35 @@ export type MessageBody = {
 }
 
 export type NetworkMessage = {
-	type : NETWORK_REQUEST_TYPE | NETWORK_RESPONSE_TYPE | WEBRTC_MESSAGE_TYPE,
+	type : NETWORK_MESSAGE_TYPE,
 	body? : MessageBody
 }
 
-export interface Peer {
+export type SignalingMessage = {
+	type : NETWORK_MESSAGE_TYPE,
+	body : {
+		sdp? : RTCSessionDescriptionInit,
+		candidate? : RTCIceCandidateInit,
+		origin? : string
+		target? : string,
+		lobby? : string,
+	}
+}
+
+export interface ServerPeer {
 	id : string,
-	isHost : boolean
+	isHost : boolean,
+	lobby : string
+}
+
+export type ClientPeer = {
+	id : string,
+	connection? : RTCPeerConnection,
+	dataChanncel? : RTCDataChannel
 }
 
 export interface Lobby {
 	id : string,
-	peers : Map<string, Peer>
+	hostPeer : string,
+	peers : Map<string, ServerPeer>
 }

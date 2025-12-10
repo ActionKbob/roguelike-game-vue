@@ -1,5 +1,5 @@
 import { ServerWebSocket } from "bun";
-import { MessageBody } from "shared";
+import { MessageBody, NetworkMessage, SignalingMessage } from "shared";
 import { v4 as uuid } from 'uuid';
 
 export class ConnectionManager
@@ -38,7 +38,7 @@ export class ConnectionManager
 		return undefined;
 	}
 
-	sendMessageToClient( _clientId : string, _message : MessageBody )
+	sendMessageToClient( _clientId : string, _message : NetworkMessage | SignalingMessage )
 	{
 		const client = this.connections.get( _clientId );
 

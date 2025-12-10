@@ -1,5 +1,4 @@
-import { v4 as uuid, } from 'uuid';
-import { Lobby, MessageBody, NETWORK_MESSAGE_TYPE, Peer } from "shared";
+import { Lobby, NETWORK_MESSAGE_TYPE, NetworkMessage, ServerPeer } from "shared";
 import { connectionManager } from '.';
 
 const LOBBY_KEY_CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -20,6 +19,7 @@ export class LobbyManager
 
 		const newLobby : Lobby = {
 			id,
+			hostPeer : _clientId,
 			peers : new Map()
 		}
 
@@ -36,7 +36,7 @@ export class LobbyManager
 
 		if( lobby )
 		{
-			this.addPeerToLobby( lobby, _clientId, true );
+			this.addPeerToLobby( lobby, _clientId, false );
 			return lobby;
 		}
 
@@ -45,30 +45,38 @@ export class LobbyManager
 
 	addPeerToLobby( _lobby : Lobby, _peerId : string, _isHost : boolean = false )
 	{
-		_lobby.peers.set( _peerId, { id : _peerId, isHost : _isHost } as Peer )
+		_lobby.peers.set( _peerId, { id : _peerId, isHost : _isHost, lobby : _lobby.id } as ServerPeer )
+
+		this.broadcast( _peerId, {
+			type : NETWORK_MESSAGE_TYPE.CLIENT_JOINED,
+			body : {
+				data : {
+					clientId : _peerId
+				}
+			}
+		} as NetworkMessage );
 	}
 
 	removePeerFromLobby( _peerId : string )
 	{
 		const lobby = this.getLobbyByPeer( _peerId );
 
+		lobby?.peers.forEach( ( value, key ) => {
+			if( key !== _peerId )
+			{
+				connectionManager.sendMessageToClient( key, {
+					type : NETWORK_MESSAGE_TYPE.CLIENT_LEFT,
+					body : {
+						message : "Client left the game",
+					}
+				} as NetworkMessage );
+			}
+		} )
+
 		if( lobby?.peers.get( _peerId )?.isHost )
 		{
-			lobby?.peers.forEach( ( value, key ) => {
-				if( key !== _peerId )
-				{
-					console.log("TRYING TO DISCONNECT")
-					connectionManager.sendMessageToClient( key, {
-						type : NETWORK_MESSAGE_TYPE.HOST_LEFT,
-						body : {
-							message : "Host left the game"
-						}
-					} as MessageBody );
-				}
-			} )
+			
 		}
-
-		lobby?.peers.delete( _peerId );
 
 		if( lobby?.peers.size === 0 )
 		{
@@ -86,6 +94,18 @@ export class LobbyManager
 		}
 
 		return undefined;
+	}
+
+	broadcast( _senderClient : string, _message : NetworkMessage )
+	{
+		const lobby = this.getLobbyByPeer( _senderClient );
+
+		if( lobby )
+		{
+			lobby.peers.forEach( ( _value, _clientId ) => {
+				connectionManager.sendMessageToClient( _clientId, _message );
+			} )
+		}
 	}
 
 	private generateLobbyId( _length : number = 4 ) : string

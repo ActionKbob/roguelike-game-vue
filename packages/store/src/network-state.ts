@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
-import { NETWORK_REQUEST_TYPE, NETWORK_RESPONSE_TYPE, WEBRTC_MESSAGE_TYPE, type NetworkMessage } from 'shared';
+import { NETWORK_MESSAGE_TYPE, type ClientPeer, type NetworkMessage, type ServerPeer, type SignalingMessage } from 'shared';
+import { NetworkStatus } from "..";
 
 export enum NETWORK_STATUS {
 	DISCONNECTED,
@@ -9,31 +10,30 @@ export enum NETWORK_STATUS {
 }
 
 type NetworkState = {
-	status : NETWORK_STATUS
+	status : NETWORK_STATUS,
 	socket : WebSocket | null,
-	peerConnection : RTCPeerConnection,
+	peers : Map<string, ClientPeer>,
+	clientId? : string,
 	dataChannel? : RTCDataChannel,
 	lobbyKey? : string,
 	isHost? : Boolean
 }
 
+const defaultState : NetworkState = {
+		status : NETWORK_STATUS.DISCONNECTED,
+		socket : null,
+		peers : new Map(),
+		clientId : undefined,
+		dataChannel : undefined,
+		lobbyKey : undefined,
+		isHost : undefined
+	}
+
 export const useNetworkState = defineStore( 'network-state', {
-	state : () => {
-		return {
-			status : NETWORK_STATUS.DISCONNECTED,
-			socket : null,
-			peerConnection : new RTCPeerConnection( {
-				iceServers : [
-					{ urls : 'stun:stun.l.google.com:19302' },
-					{ urls : 'stun:global.stun.twilio.com:3478' }
-				]
-			} )
-		} as NetworkState;
-	},
+	state : () => ( { ...defaultState} ),
 	actions : {
 		connect : function( _lobbyKey? : string )
 		{
-
 			const url : string = "ws://localhost:5001";
 
 			try
@@ -43,13 +43,11 @@ export const useNetworkState = defineStore( 'network-state', {
 				this.status = NETWORK_STATUS.CONNECTING;
 
 				this.socket.addEventListener( "open", () => {
-					this.status = NETWORK_STATUS.CONNECTED;
-					console.log('Socket connected');
-
 					if( _lobbyKey )
 					{
+						console.log( 'Attempting to join lobby ', _lobbyKey );
 						this.socket?.send( JSON.stringify( {
-							type : NETWORK_REQUEST_TYPE.JOIN_LOBBY,
+							type : NETWORK_MESSAGE_TYPE.JOIN_LOBBY,
 							body : {
 								data : {
 									key : _lobbyKey
@@ -59,16 +57,15 @@ export const useNetworkState = defineStore( 'network-state', {
 					}
 					else
 					{
+						console.log( 'Attempting to create lobby' );
 						this.socket?.send( JSON.stringify( {
-							type : NETWORK_REQUEST_TYPE.CREATE_LOBBY
+							type : NETWORK_MESSAGE_TYPE.CREATE_LOBBY
 						} ) );
 					}
 				} );
 
 				this.socket.addEventListener( "close", () => {
-					this.status = NETWORK_STATUS.DISCONNECTED;
-					console.log('Socket disconnected');
-					this.socket = null;
+					this.$reset();
 				} );
 
 				this.socket.addEventListener( "message", this.handleMessage );
@@ -88,57 +85,63 @@ export const useNetworkState = defineStore( 'network-state', {
 
 			switch( type )
 			{
-				case NETWORK_RESPONSE_TYPE.LOBBY_JOINED_SUCCESS :
+				case NETWORK_MESSAGE_TYPE.CONNECTION_SUCCESS :
+					this.status = NETWORK_STATUS.CONNECTED;
+					this.clientId = body.data?.clientId;
+					break;
 
-					const { key, isHost } = body.data;
+				case NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS :
+
+					const { key, isHost, peers } = body.data;
 
 					this.lobbyKey = key;
 					this.isHost = isHost || false;
 
-					if( this.socket )
-						this._setupPeerConnection();
-
-					if( !this.isHost )
+					for( const peer of peers )
 					{
-						this.dataChannel = this.peerConnection.createDataChannel( 'chat' );
-						
+						this.peers.set( peer.id, { id : peer.id } );
 					}
 
 					break;
 
-				case NETWORK_RESPONSE_TYPE.LOBBY_JOINED_FAILURE :
+				case NETWORK_MESSAGE_TYPE.LOBBY_JOINED_FAILURE :
 					this.socket?.close();
 					console.error( `Connection failed: ${ body }` );
 					break;
 
-				case NETWORK_RESPONSE_TYPE.HOST_LEFT :
-					this.socket?.close();
-					console.log( 'Lobby Host left, leaving game' );
+				case NETWORK_MESSAGE_TYPE.CLIENT_JOINED :
+					
+					const newClientId = body.data.clientId;
 
+					if( newClientId !== this.clientId )
+						this.peers.set( newClientId, { id : newClientId } );
+
+					if( this.isHost )
+						this._setupPeerConnection( newClientId );
+
+					break;
+
+				case NETWORK_MESSAGE_TYPE.CLIENT_LEFT :
+					console.log( 'Client left' );
+					break;
 				// WEB RTC MESSAGES
-				case WEBRTC_MESSAGE_TYPE.OFFER :
-
+				case NETWORK_MESSAGE_TYPE.OFFER :
+					
 					break;
 				
-				case WEBRTC_MESSAGE_TYPE.ANSWER :
+				case NETWORK_MESSAGE_TYPE.ANSWER :
 					break;
 				
-				case WEBRTC_MESSAGE_TYPE.CANDIDATE :
+				case NETWORK_MESSAGE_TYPE.CANDIDATE :
+					
 					break;
 			}
 		},
 
 		// WebRTC Actions
-		_setupPeerConnection : function()
+		_setupPeerConnection : function( _peerId : string )
 		{
-			this.peerConnection.onicecandidate = ( event : RTCPeerConnectionIceEvent ) => {
-				if( event.candidate )
-				{
-					this.socket?.send( JSON.stringify( {
-						
-					} as NetworkMessage ) )
-				}
-			}
+
 		}
 	}
 } );

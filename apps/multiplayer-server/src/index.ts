@@ -1,22 +1,9 @@
 import { ServerWebSocket } from 'bun';
-import { v4 as uuid } from 'uuid';
-import { Lobby, NETWORK_REQUEST_TYPE, NETWORK_RESPONSE_TYPE, NetworkMessage } from 'shared';
+import { Lobby, MessageBody, NETWORK_MESSAGE_TYPE, NetworkMessage, SignalingMessage } from 'shared';
 import { LobbyManager } from './lobby-manager';
 import { ConnectionManager } from './connection-manager';
 
 const PORT = process.env.PORT || 5001;
-
-const creatLobbyKey = ( _length : number ) => {
-    const characterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let result = '';
-
-    for( let i = 0; i < _length; i++ )
-    {
-        result += characterPool.charAt( Math.floor( Math.random() * characterPool.length ) );
-    }
-
-    return result;
-}
 
 const server = Bun.serve({
 	port : PORT,
@@ -35,9 +22,11 @@ const server = Bun.serve({
 			console.log( `Client ${ clientId } CONNECTED` );
 			
 			_ws.send( JSON.stringify( {
-				type : NETWORK_RESPONSE_TYPE.CONNECTION_SUCCESS,
+				type : NETWORK_MESSAGE_TYPE.CONNECTION_SUCCESS,
 				body : {
-					data : clientId
+					data : {
+						clientId
+					}
 				}
 			} as NetworkMessage ) );
 		},
@@ -54,15 +43,19 @@ const server = Bun.serve({
 		},
 		message( _ws : ServerWebSocket, _message : string | Buffer<ArrayBuffer> )
 		{
-			const { type, body } = JSON.parse( _message as string ) as NetworkMessage;
+			const { type, body } = JSON.parse( _message as string ) as NetworkMessage | SignalingMessage;
 
 			const client = connectionManager.findConnectionKeyByValue( _ws );
 			
 			let lobby : Lobby | undefined;
+			
+			console.log( type )
 
 			switch ( type ) {
-				case NETWORK_REQUEST_TYPE.CREATE_LOBBY :
+				case NETWORK_MESSAGE_TYPE.CREATE_LOBBY :
 					
+					console.log('CREATING LOBBY');
+
 					if( client )
 						lobby = lobbyManager.createLobby( client );
 						
@@ -70,14 +63,31 @@ const server = Bun.serve({
 
 					break;
 
-				case NETWORK_REQUEST_TYPE.JOIN_LOBBY :
+				case NETWORK_MESSAGE_TYPE.JOIN_LOBBY :
 
-					console.log(`Attempting to join ${body?.data?.key}`)
+					console.log('JOINING LOBBY');
 
 					if( client )
-						lobby = lobbyManager.joinLobby( body?.data?.key, client )
+						lobby = lobbyManager.joinLobby( ( body as MessageBody )?.data?.key, client );
 
 					handleLobbyJoinResponse( _ws, lobby );
+
+					break;
+
+				// FORWARD SIGNALING MESSAGES
+				case NETWORK_MESSAGE_TYPE.CANDIDATE || NETWORK_MESSAGE_TYPE.OFFER || NETWORK_MESSAGE_TYPE.ANSWER :
+					console.log( `Forwarding message of ${ type }` )
+					if( client )
+					{
+						lobby = lobbyManager.getLobbyByPeer( client );
+						if( lobby )
+						{
+							connectionManager.sendMessageToClient( lobby.hostPeer, {
+								type,
+								body
+							} as SignalingMessage );
+						}
+					}
 
 					break;
 			}
@@ -89,11 +99,13 @@ function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefi
 {
 	if( _lobby )
 	{
+		console.log("VAAAS", [..._lobby.peers.values()])
 		_ws.send( JSON.stringify( {
-			type : NETWORK_RESPONSE_TYPE.LOBBY_JOINED_SUCCESS,
+			type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
 			body : {
 				data : {
 					key : _lobby.id,
+					peers : [ ..._lobby.peers.values() ],
 					isHost : _isHost
 				}
 			}
@@ -102,7 +114,7 @@ function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefi
 	else
 	{
 		_ws.send( JSON.stringify( {
-			type : NETWORK_RESPONSE_TYPE.LOBBY_JOINED_FAILURE,
+			type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_FAILURE,
 			body : {
 				message : "Failed to join lobby"
 			}
