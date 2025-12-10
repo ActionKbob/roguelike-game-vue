@@ -99,7 +99,6 @@ function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefi
 {
 	if( _lobby )
 	{
-		console.log("VAAAS", [..._lobby.peers.values()])
 		_ws.send( JSON.stringify( {
 			type : NETWORK_MESSAGE_TYPE.LOBBY_JOINED_SUCCESS,
 			body : {
