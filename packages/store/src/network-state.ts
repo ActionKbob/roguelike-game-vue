@@ -12,6 +12,7 @@ type NetworkState = {
 	status : NETWORK_STATUS
 	socket : WebSocket | null,
 	peerConnection : RTCPeerConnection,
+	dataChannel? : RTCDataChannel,
 	lobbyKey? : string,
 	isHost? : Boolean
 }
@@ -95,10 +96,13 @@ export const useNetworkState = defineStore( 'network-state', {
 					this.isHost = isHost || false;
 
 					if( this.socket )
-						setupPeerConnection( this.socket, this.peerConnection );
+						this._setupPeerConnection();
 
-					if( this.isHost )
-						startHostConnection();
+					if( !this.isHost )
+					{
+						this.dataChannel = this.peerConnection.createDataChannel( 'chat' );
+						
+					}
 
 					break;
 
@@ -123,48 +127,18 @@ export const useNetworkState = defineStore( 'network-state', {
 					break;
 			}
 		},
-	}
-} );
 
-// WEB RTC HANDLERS
-const setupPeerConnection = ( _socket : WebSocket, _peerConnection : RTCPeerConnection ) => {
-	_peerConnection.onicecandidate = ( event : RTCPeerConnectionIceEvent ) => {
-		if( event.candidate )
+		// WebRTC Actions
+		_setupPeerConnection : function()
 		{
-			_socket?.send( JSON.stringify( {
-				type : WEBRTC_MESSAGE_TYPE.CANDIDATE,
-				body : {
-					data : {
-						candidate : event.candidate.toJSON()
-					}
-				}
-			} as NetworkMessage ) );
-		}
-	}
-
-	_peerConnection.ondatachannel = ( event : RTCDataChannelEvent ) => {
-
-	}
-}
-
-const startHostConnection = () => {
-	
-}
-
-const handleOffer = async ( _socket : WebSocket, _peerConnection : RTCPeerConnection, _sdp : RTCSessionDescriptionInit ) => {
-	
-		await _peerConnection.setRemoteDescription( new RTCSessionDescription( _sdp ) );
-
-		const answer = await _peerConnection.createAnswer();
-		await _peerConnection.setLocalDescription( answer );
-
-		_socket.send( JSON.stringify( {
-			type : WEBRTC_MESSAGE_TYPE.ANSWER,
-			body : {
-				data : {
-					sdp : answer,
-					targetPeerId : ''
+			this.peerConnection.onicecandidate = ( event : RTCPeerConnectionIceEvent ) => {
+				if( event.candidate )
+				{
+					this.socket?.send( JSON.stringify( {
+						
+					} as NetworkMessage ) )
 				}
 			}
-		} as NetworkMessage ) )
-}
+		}
+	}
+} );
