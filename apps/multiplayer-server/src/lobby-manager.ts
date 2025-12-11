@@ -54,34 +54,37 @@ export class LobbyManager
 					clientId : _peerId
 				}
 			}
-		} as NetworkMessage );
+		} as NetworkMessage, _lobby );
 	}
 
 	removePeerFromLobby( _peerId : string )
 	{
 		const lobby = this.getLobbyByPeer( _peerId );
 
-		lobby?.peers.forEach( ( value, key ) => {
-			if( key !== _peerId )
-			{
-				connectionManager.sendMessageToClient( key, {
-					type : NETWORK_MESSAGE_TYPE.CLIENT_LEFT,
-					body : {
-						message : "Client left the game",
+		if( lobby?.peers.has( _peerId ) )
+		{
+			lobby?.peers.delete( _peerId );
+
+			this.broadcast( _peerId, {
+				type : NETWORK_MESSAGE_TYPE.CLIENT_LEFT,
+				body : {
+					message : "Client left the game",
+					data : {
+						clientId : _peerId
 					}
-				} as NetworkMessage );
+				}
+			} as NetworkMessage, lobby );
+
+			if( lobby?.peers.get( _peerId )?.isHost )
+			{
+				// TODO sendMessage to disconnect to all peers, remove all peers
 			}
-		} )
 
-		if( lobby?.peers.get( _peerId )?.isHost )
-		{
-			
-		}
-
-		if( lobby?.peers.size === 0 )
-		{
-			this.lobbies.delete( lobby.id );
-			console.warn( `Lobby ${ lobby.id } is empty, deleting lobby` );
+			if( lobby?.peers.size === 0 )
+			{
+				this.lobbies.delete( lobby.id );
+				console.warn( `Lobby ${ lobby.id } is empty, deleting lobby` );
+			}
 		}
 	}
 
@@ -96,13 +99,13 @@ export class LobbyManager
 		return undefined;
 	}
 
-	broadcast( _senderClient : string, _message : NetworkMessage )
+	broadcast( _senderClient : string, _message : NetworkMessage, _lobby? : Lobby )
 	{
-		const lobby = this.getLobbyByPeer( _senderClient );
-
-		if( lobby )
+		_lobby = _lobby ? _lobby : this.getLobbyByPeer( _senderClient );
+		
+		if( _lobby )
 		{
-			lobby.peers.forEach( ( _value, _clientId ) => {
+			_lobby.peers.forEach( ( _value, _clientId ) => {
 				connectionManager.sendMessageToClient( _clientId, _message );
 			} )
 		}

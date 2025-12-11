@@ -1,5 +1,5 @@
 import { ServerWebSocket } from 'bun';
-import { Lobby, MessageBody, NETWORK_MESSAGE_TYPE, NetworkMessage, SignalingMessage } from 'shared';
+import { Lobby, MessageBody, NETWORK_MESSAGE_TYPE, NetworkMessage, RTCMessageBody, SignalingMessage } from 'shared';
 import { LobbyManager } from './lobby-manager';
 import { ConnectionManager } from './connection-manager';
 
@@ -49,8 +49,6 @@ const server = Bun.serve({
 			
 			let lobby : Lobby | undefined;
 			
-			console.log( type )
-
 			switch ( type ) {
 				case NETWORK_MESSAGE_TYPE.CREATE_LOBBY :
 					
@@ -75,14 +73,18 @@ const server = Bun.serve({
 					break;
 
 				// FORWARD SIGNALING MESSAGES
-				case NETWORK_MESSAGE_TYPE.CANDIDATE || NETWORK_MESSAGE_TYPE.OFFER || NETWORK_MESSAGE_TYPE.ANSWER :
-					console.log( `Forwarding message of ${ type }` )
+				case NETWORK_MESSAGE_TYPE.CANDIDATE :
+				case NETWORK_MESSAGE_TYPE.OFFER :
+				case NETWORK_MESSAGE_TYPE.ANSWER :
+					console.log( `Forwarding message of ${ type } from ${client}` )
 					if( client )
 					{
 						lobby = lobbyManager.getLobbyByPeer( client );
 						if( lobby )
 						{
-							connectionManager.sendMessageToClient( lobby.hostPeer, {
+							const { target } = body as RTCMessageBody;
+
+							connectionManager.sendMessageToClient( target!, {
 								type,
 								body
 							} as SignalingMessage );
@@ -105,7 +107,8 @@ function handleLobbyJoinResponse( _ws : ServerWebSocket, _lobby : Lobby | undefi
 				data : {
 					key : _lobby.id,
 					peers : [ ..._lobby.peers.values() ],
-					isHost : _isHost
+					isHost : _isHost,
+					hostId : _lobby.hostPeer
 				}
 			}
 		} as NetworkMessage ) );

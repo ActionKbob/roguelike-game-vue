@@ -22,6 +22,14 @@ export type MessageBody = {
 	message? : string
 }
 
+export type RTCMessageBody = {
+	sdp? : RTCSessionDescriptionInit,
+	candidate? : RTCIceCandidateInit,
+	origin? : string
+	target? : string,
+	lobby? : string,
+}
+
 export type NetworkMessage = {
 	type : NETWORK_MESSAGE_TYPE,
 	body? : MessageBody
@@ -29,13 +37,7 @@ export type NetworkMessage = {
 
 export type SignalingMessage = {
 	type : NETWORK_MESSAGE_TYPE,
-	body : {
-		sdp? : RTCSessionDescriptionInit,
-		candidate? : RTCIceCandidateInit,
-		origin? : string
-		target? : string,
-		lobby? : string,
-	}
+	body : RTCMessageBody
 }
 
 export interface ServerPeer {
