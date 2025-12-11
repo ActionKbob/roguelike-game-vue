@@ -75,9 +75,14 @@ export class LobbyManager
 				}
 			} as NetworkMessage, lobby );
 
-			if( lobby?.peers.get( _peerId )?.isHost )
+			if( lobby?.hostPeer === _peerId )
 			{
-				// TODO sendMessage to disconnect to all peers, remove all peers
+				this.broadcast( _peerId, {
+					type : NETWORK_MESSAGE_TYPE.SESSION_ENDED,
+					body : {
+						message : "Host Left, ending session"
+					}
+				} as NetworkMessage, lobby );
 			}
 
 			if( lobby?.peers.size === 0 )

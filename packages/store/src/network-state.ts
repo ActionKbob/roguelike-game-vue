@@ -130,6 +130,10 @@ export const useNetworkState = defineStore( 'network-state', {
 
 					break;
 
+				case NETWORK_MESSAGE_TYPE.SESSION_ENDED :
+					this.socket?.close();
+					break;
+
 				// WEB RTC MESSAGES
 				case NETWORK_MESSAGE_TYPE.OFFER : 
 				case NETWORK_MESSAGE_TYPE.ANSWER :
