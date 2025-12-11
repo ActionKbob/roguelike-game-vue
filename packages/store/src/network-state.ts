@@ -14,7 +14,6 @@ type NetworkState = {
 	socket : WebSocket | null,
 	peers : Map<string, ClientPeer>,
 	clientId? : string,
-	dataChannel? : RTCDataChannel,
 	lobbyKey? : string,
 	isHost? : Boolean
 }
@@ -24,7 +23,6 @@ const defaultState : NetworkState = {
 		socket : null,
 		peers : new Map(),
 		clientId : undefined,
-		dataChannel : undefined,
 		lobbyKey : undefined,
 		isHost : undefined
 	}
@@ -140,6 +138,38 @@ export const useNetworkState = defineStore( 'network-state', {
 
 		// WebRTC Actions
 		_setupPeerConnection : function( _peerId : string )
+		{
+			const peer = this.peers.get( _peerId );
+
+			if( !peer )
+				return;
+
+			const connection = new RTCPeerConnection( {
+				iceServers: [
+					{ urls: 'stun:stun.l.google.com:19302' },
+					{ urls: 'stun:global.stun.twilio.com:3478' }
+				]
+      } )
+
+			let dataChannel = undefined;
+
+			if( this.isHost )
+			{
+				dataChannel = connection.createDataChannel( 'chat' );
+				this._setupDataChannel( dataChannel, _peerId );
+			}
+			else
+			{
+				connection.ondatachannel = ( event ) => {
+					dataChannel = event.channel;
+					this._setupDataChannel( dataChannel, _peerId );
+				}
+			}
+
+			peer.dataChannel = dataChannel;
+		},
+
+		_setupDataChannel : function( _dataChannel : RTCDataChannel, _peerId : string )
 		{
 
 		}

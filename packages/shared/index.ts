@@ -47,7 +47,7 @@ export interface ServerPeer {
 export type ClientPeer = {
 	id : string,
 	connection? : RTCPeerConnection,
-	dataChanncel? : RTCDataChannel
+	dataChannel? : RTCDataChannel
 }
 
 export interface Lobby {
