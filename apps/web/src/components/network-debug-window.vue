@@ -37,12 +37,11 @@
 		<div>
 			<div>
 				<div class="flex gap-4" v-if="networkState.status == NetworkStatus.DISCONNECTED" >
-					<button class="button" v-on:click="() => { networkState.connect( lobbyKey ) }" >Connect</button>
-					<input type="text" maxlength=4 class="p-1 rounded border border-white outline-0" :value="lobbyKey" @input="handleKeyInput" v-if="networkState.status == NetworkStatus.DISCONNECTED" />
+					<button class="btn" v-on:click="() => { networkState.connect( lobbyKey ) }" >Connect</button>
+					<input type="text" maxlength=4 class="p-1 rounded border border-white outline-0" :value="lobbyKey" @input="handleKeyInput" v-if="networkState.status == NetworkStatus.DISCONNECTED" v-auto-blur />
 				</div>
-				<button class="button" v-else v-on:click="() => networkState.disconnect()" >Disconnect</button>
+				<button class="btn" v-else v-on:click="() => networkState.disconnect()" >Disconnect</button>
 			</div>
 		</div>
-				
 	</div>
 </template>

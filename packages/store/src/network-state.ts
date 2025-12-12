@@ -1,3 +1,4 @@
+import { useChatState } from "#chat-state.js";
 import { defineStore } from "pinia";
 import { NETWORK_MESSAGE_TYPE, type ClientPeer, type NetworkMessage, type RTCMessageBody, type ServerPeer, type SignalingMessage } from 'shared';
 
@@ -8,23 +9,27 @@ export enum NETWORK_STATUS {
 	DISCONNECTING
 }
 
-type NetworkState = {
+export type NetworkState = {
 	status : NETWORK_STATUS,
 	socket : WebSocket | null,
 	peers : Map<string, ClientPeer>,
+	channelMap : Map<string, DataChannelHandler>,
 	clientId? : string,
 	lobbyKey? : string,
-	isHost? : Boolean
+	isHost? : Boolean,
 }
 
+export type DataChannelHandler = ( _dataChannel : RTCDataChannel, _peerId : string ) => void
+
 const defaultState : NetworkState = {
-		status : NETWORK_STATUS.DISCONNECTED,
-		socket : null,
-		peers : new Map(),
-		clientId : undefined,
-		lobbyKey : undefined,
-		isHost : undefined
-	}
+	status : NETWORK_STATUS.DISCONNECTED,
+	socket : null,
+	peers : new Map(),
+	channelMap : new Map(),
+	clientId : undefined,
+	lobbyKey : undefined,
+	isHost : undefined
+}
 
 export const useNetworkState = defineStore( 'network-state', {
 	state : () => ( { ...defaultState} ),
@@ -122,7 +127,7 @@ export const useNetworkState = defineStore( 'network-state', {
 					if( this.peers.has( body.data.clientId ) )
 					{
 						const peer = this.peers.get( body.data.clientId );
-						peer?.dataChannel?.close();
+						peer?.dataChannels?.forEach( channel => channel.close() );
 						peer?.connection?.close();
 
 						this.peers.delete( peer?.id! );
@@ -141,6 +146,16 @@ export const useNetworkState = defineStore( 'network-state', {
 					this._handleSignalResponse( type, body );
 					break;
 			}
+		},
+
+		addDataChannel : function( _label : string, _handler : DataChannelHandler )
+		{
+			this.channelMap.set( _label, _handler );
+		},
+
+		getPeerIndex : function( _peerId : string ) : number
+		{
+			return [ ...this.peers.keys() ].indexOf( _peerId );
 		},
 
 		// WebRTC Actions
@@ -168,22 +183,31 @@ export const useNetworkState = defineStore( 'network-state', {
 
 			peer.connection = connection;
 
-			let dataChannel = undefined;
+			let dataChannels : Array<RTCDataChannel> = [];
 
 			if( this.isHost )
 			{
-				dataChannel = connection.createDataChannel( 'chat' );
-				this._setupDataChannel( dataChannel, _peerId );
+				for( const [ key, value ] of this.channelMap )
+				{
+					let dataChannel = connection.createDataChannel( key );
+					dataChannels.push( dataChannel );
+					value( dataChannel, _peerId );
+				}
 			}
 			else
 			{
 				connection.ondatachannel = ( event ) => {
-					dataChannel = event.channel;
-					this._setupDataChannel( dataChannel, _peerId );
-				}
-			}
+					let dataChannel = event.channel;
 
-			
+					const handler = this.channelMap.get( event.channel.label );
+
+					if( handler )
+					{
+						dataChannels.push( dataChannel );
+						handler( dataChannel, _peerId );
+					}
+				}
+			}			
 
 			// Handle Ice Candidate
 			connection.onicecandidate = ( event : RTCPeerConnectionIceEvent ) => {
@@ -200,7 +224,7 @@ export const useNetworkState = defineStore( 'network-state', {
 				}
 			}
 
-			peer.dataChannel = dataChannel;
+			peer.dataChannels = dataChannels;
 
 			// Connections are instantiated by the host
 			if( this.isHost )
@@ -220,21 +244,6 @@ export const useNetworkState = defineStore( 'network-state', {
 			}
 		},
 
-		_setupDataChannel : function( _dataChannel : RTCDataChannel, _peerId : string )
-		{
-			_dataChannel.onopen = () => {
-				console.log( `Data channel with ${ _peerId } openned` );				
-			}
-
-			_dataChannel.onmessage = ( event : MessageEvent ) => {
-				console.log( `Message from ${ _peerId }:`, event.data );
-			}
-
-			_dataChannel.close = () => {
-				console.log( `Data channel with ${ _peerId } closed` );
-			}
-		},
-
 		_handleSignalResponse : async function( 
 			_type : NETWORK_MESSAGE_TYPE.CANDIDATE | NETWORK_MESSAGE_TYPE.OFFER | NETWORK_MESSAGE_TYPE.ANSWER, 
 			_body : RTCMessageBody 
@@ -245,8 +254,6 @@ export const useNetworkState = defineStore( 'network-state', {
 			if( peer )
 			{
 				const peerConnection = peer.connection;
-
-				console.log( peerConnection, _type, _body )
 
 				try
 				{

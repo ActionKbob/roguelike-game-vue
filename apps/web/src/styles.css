@@ -1,7 +1,12 @@
 @import "tailwind-config";
 @import "tailwindcss";
 
-.button
+.btn
 {
-	@apply bg-indigo-400 text-slate-800 px-4 py-2 rounded hover:bg-indigo-300 border border-indigo-900;
+	@apply bg-indigo-200 text-slate-800 px-4 py-2 rounded hover:bg-indigo-100 border border-indigo-800;
+}
+
+input
+{
+	@apply text-white outline-0 border p-2 rounded border-indigo-200;
 }
