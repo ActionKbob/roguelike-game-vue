@@ -1,24 +1,26 @@
 import { Spritesheet } from "#game/types.js";
 import { SystemPipeline } from "#game/utilities.js";
-import { useGameState } from "#store/game-state.js";
-import { createWorld, type World } from "bitecs";
 import { GameObjects, Scene } from "phaser";
 import { RenderSystem } from "../ecs/systems";
 import { useInputBindingsState } from "#store/input-bindings-state.js";
+import { useGameState } from "#store/game-state.js";
+
 
 export class GameplayScene extends Scene
 {
 	private gameState = useGameState();
+
+	get World()
+	{
+		return this.gameState.world;
+	}
+
 	private inputState = useInputBindingsState();
 	get InputState()
 	{
 		return this.inputState;
 	}
 
-	protected world : World;
-	get World() : World {
-		return this.world;
-	}
 
 	protected systems : SystemPipeline;
 
@@ -41,11 +43,7 @@ export class GameplayScene extends Scene
 
 	constructor( key : string = 'gameplay' ) {
 		super( key );
-
-		this.gameState.setScene( this ); 
 		
-
-		this.world = createWorld();
 		this.systems = new SystemPipeline();
 	}
 
@@ -57,7 +55,7 @@ export class GameplayScene extends Scene
 
 		this.blitters.set( Spritesheet.DUNGEON, this.add.blitter( 0, 0, 'dungeon' ) );
 		this.blitters.set( Spritesheet.SHIP, this.add.blitter( 0, 0, 'ship' ) );
-		this.systems.add( { name : 'render', func : RenderSystem( this.world ) } );
+		this.systems.add( { name : 'render', func : RenderSystem( this.World ) } );
 	}
 
 	update( time : number, delta : number ) : void {

@@ -16,10 +16,10 @@ export class MapScene extends GameplayScene
 
 		// This is all temporary until I figure out how to structure my prefabs
 
-		const playerShipEntity = addEntity( this.world );
+		const playerShipEntity = addEntity( this.World );
 
-		addComponent( this.world, playerShipEntity, Renderable );
-		addComponent( this.world, playerShipEntity, Position );
+		addComponent( this.World, playerShipEntity, Renderable );
+		addComponent( this.World, playerShipEntity, Position );
 
 		Renderable.texture[ playerShipEntity ] = Spritesheet.DUNGEON;
 		Renderable.frame[ playerShipEntity ] = ( 12 * 7 ) + 3;

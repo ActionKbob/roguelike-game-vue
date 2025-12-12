@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import { onMounted, ref } from 'vue';
 	import Phaser from 'phaser';
-	import { PreloadScene, SpaceScene } from '#game/scenes';
-	import { MapScene } from '#game/scenes/map-scene.js';
+	import { PreloadScene } from '#game/scenes';
 	import { useInputBindingsState } from '#store/input-bindings-state.js';
+import { GameplayScene } from '#game/scenes/gameplay-scene.js';
 
 	const inputBindingsState = useInputBindingsState();
 
@@ -27,8 +27,7 @@
 			antialias : false,
 			scene : [
 				PreloadScene,
-				SpaceScene,
-				MapScene
+				GameplayScene
 			],
 			fps : {
 				limit : 144

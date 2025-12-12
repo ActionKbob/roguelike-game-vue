@@ -1,15 +1,11 @@
 import type { GameObjects } from "phaser";
 import { hasComponent, observe, onAdd, onRemove, query, type World } from "bitecs";
-import { useGameState } from "#store/game-state";
 import type { GameplayScene } from "#game/scenes/gameplay-scene";
 import { Position, Renderable, Rotation } from "#game/ecs/components";
 import type { SystemType } from "#game/utilities.js";
 
 export function RenderSystem( _world : World ) : SystemType
-{
-
-	const gameState = useGameState();
-	
+{	
 	const enterQuery : integer[] = [];
 	const exitQuery : integer[] = [];
 	

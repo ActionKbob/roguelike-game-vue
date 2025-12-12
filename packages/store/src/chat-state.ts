@@ -44,10 +44,15 @@ export const useChatState = defineStore( 'chat-state', {
 
 			_dataChannel.close = () => {
 				console.log( `${ _dataChannel.label } channel  with ${ _peerId } closed` );
+				this.channels = this.channels.filter( channel => channel !== _dataChannel );
 			}
 		},
 		sendMessage : function( _message : string )
 		{
+
+			if( !_message || _message.length === 0 )
+				return;
+
 			const newMessage = {
 				sender : this.network.clientId,
 				message : _message

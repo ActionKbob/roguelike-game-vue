@@ -1,5 +1,5 @@
 import { ServerWebSocket } from "bun";
-import { MessageBody, NetworkMessage, SignalingMessage } from "shared";
+import { NetworkMessage, SignalingMessage } from "shared";
 import { v4 as uuid } from 'uuid';
 
 export class ConnectionManager

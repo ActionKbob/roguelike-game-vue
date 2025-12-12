@@ -1,14 +1,10 @@
 import { query, type World } from "bitecs";
-import { useGameState } from "#store/game-state.js";
 import type { GameplayScene } from "#game/scenes/gameplay-scene.js";
 import { type System } from "#game/types.js";
 import { Position, Velocity } from "#game/ecs/components";
 
 export function VelocitySystem( _world : World ) : System
 {
-	const gameState = useGameState();
-	const gameplayScene = gameState.currentScene as GameplayScene;
-
 	return ( _world : World<{}>, _scene : GameplayScene ) => {
 
 		const { DeltaTime } = _scene;

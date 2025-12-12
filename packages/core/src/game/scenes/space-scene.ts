@@ -18,16 +18,16 @@ export class SpaceScene extends GameplayScene
 		super.init();
 
 		this.systems.add( [
-			{ name : "shipControlSystem", func : ShipControlSystem( this.world ) },
-			{ name : "rotationSystem", func : RotationSystem( this.world ) },
-			{ name : "velocitySystem", func : VelocitySystem( this.world ) },
+			{ name : "shipControlSystem", func : ShipControlSystem( this.World ) },
+			{ name : "rotationSystem", func : RotationSystem( this.World ) },
+			{ name : "velocitySystem", func : VelocitySystem( this.World ) },
 		] );
 
 		// This is all temporary until I figure out how to structure my prefabs
 
-		const playerShipEntity = addEntity( this.world );
+		const playerShipEntity = addEntity( this.World );
 
-		addComponents( this.world, playerShipEntity, Rotation, Renderable, Position, Velocity, PlayerInput, ShipControls );
+		addComponents( this.World, playerShipEntity, Rotation, Renderable, Position, Velocity, PlayerInput, ShipControls );
 
 		Renderable.texture[ playerShipEntity ] = Spritesheet.SHIP;
 		Renderable.frame[ playerShipEntity ] = 3;

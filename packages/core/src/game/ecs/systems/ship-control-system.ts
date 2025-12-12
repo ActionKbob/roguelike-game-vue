@@ -1,15 +1,11 @@
 import { query, type World } from "bitecs";
 import type { GameplayScene } from "#game/scenes/gameplay-scene.js";
 import { InputAction, type System } from "#game/types.js";
-import { useGameState } from "#store/game-state.js";
 import { PlayerInput, Position, Rotation, ShipControls, Velocity } from "#game/ecs/components";
 import { degToRad } from "#game/utilities.js";
 
 export function ShipControlSystem( _world : World ) : System
 {
-	const gameState = useGameState();
-	const gameplayScene = gameState.currentScene as GameplayScene;
-
 	return ( _world : World<{}>, _scene : GameplayScene ) => {
 
 		const { DeltaTime } = _scene;

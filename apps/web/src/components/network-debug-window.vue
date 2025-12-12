@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-	import { useNetworkState, NetworkStatus } from 'store';
+	import { useNetworkState, NETWORK_STATUS } from 'store';
 	import { ref } from 'vue';
 
 	const props = defineProps( [ 'lobbyKeyInput' ] );
@@ -22,7 +22,7 @@
 		<div>
 			<p>Client ID &mdash; {{ networkState.clientId }}</p>
 		</div>
-		<div class="border p-4" v-if="networkState.status == NetworkStatus.CONNECTED && networkState.lobbyKey">
+		<div class="border p-4" v-if="networkState.status == NETWORK_STATUS.CONNECTED && networkState.lobbyKey">
 			<p class="text-center mb-2">&mdash; Lobby &mdash;</p>
 			<div class="mb-4">
 				<p>Key : <span class="text-xl font-extrabold" :class="{ 'text-amber-300' : networkState.isHost }">{{ networkState.lobbyKey }}</span></p>
@@ -36,9 +36,9 @@
 		</div>
 		<div>
 			<div>
-				<div class="flex gap-4" v-if="networkState.status == NetworkStatus.DISCONNECTED" >
+				<div class="flex gap-4" v-if="networkState.status == NETWORK_STATUS.DISCONNECTED" >
 					<button class="btn" v-on:click="() => { networkState.connect( lobbyKey ) }" >Connect</button>
-					<input type="text" maxlength=4 class="p-1 rounded border border-white outline-0" :value="lobbyKey" @input="handleKeyInput" v-if="networkState.status == NetworkStatus.DISCONNECTED" v-auto-blur />
+					<input type="text" maxlength=4 class="p-1 rounded border border-white outline-0" :value="lobbyKey" @input="handleKeyInput" v-if="networkState.status == NETWORK_STATUS.DISCONNECTED" v-auto-blur />
 				</div>
 				<button class="btn" v-else v-on:click="() => networkState.disconnect()" >Disconnect</button>
 			</div>

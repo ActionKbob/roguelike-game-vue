@@ -11,11 +11,8 @@ import { useChatState } from 'store/src/chat-state';
 
 	const handleChatSubmit = ( event : SubmitEvent ) => {
 		event.preventDefault();
-
 		chatState.sendMessage( inputVal );
-
 		inputVal = '';
-		
 	}
 
 </script>
