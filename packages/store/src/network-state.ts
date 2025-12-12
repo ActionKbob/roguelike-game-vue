@@ -65,7 +65,20 @@ export const useNetworkState = defineStore( 'network-state', {
 				} );
 
 				this.socket.addEventListener( "close", () => {
-					this.$reset();
+					this.status = NETWORK_STATUS.DISCONNECTED;
+					this.socket = null;
+
+					for( const [ key, value ] of this.peers )
+					{
+						value.connection?.close();
+						value.dataChannels?.forEach( _dc => _dc.close() );
+					}
+					this.peers.clear();
+
+					this.clientId = undefined;
+					this.lobbyKey = undefined;
+					this.isHost = undefined;
+
 				} );
 
 				this.socket.addEventListener( "message", this.handleMessage );

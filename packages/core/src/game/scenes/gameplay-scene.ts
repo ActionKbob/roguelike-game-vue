@@ -3,12 +3,14 @@ import { SystemPipeline } from "#game/utilities.js";
 import { GameObjects, Scene } from "phaser";
 import { RenderSystem } from "../ecs/systems";
 import { useInputBindingsState } from "#store/input-bindings-state.js";
-import { useGameState } from "#store/game-state.js";
+import { useNetworkedGameState } from "#store/networked-game-state.js";
+import { useNetworkState } from "store";
 
 
 export class GameplayScene extends Scene
 {
-	private gameState = useGameState();
+	private gameState = useNetworkedGameState();
+	private networkState = useNetworkState();
 
 	get World()
 	{
@@ -44,6 +46,9 @@ export class GameplayScene extends Scene
 	constructor( key : string = 'gameplay' ) {
 		super( key );
 		
+		this.gameState.setup( this );
+		this.networkState.addDataChannel( 'gamedata', this.gameState.setupDataChannel );
+
 		this.systems = new SystemPipeline();
 	}
 

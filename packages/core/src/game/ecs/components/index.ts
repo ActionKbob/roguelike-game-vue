@@ -23,3 +23,5 @@ export const ShipControls = {
 	acceleration : f32([]),
 	rotationSpeed : f32([])
 }
+
+export const Networked = {};
