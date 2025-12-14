@@ -1,10 +1,13 @@
 import { defineStore, type Store } from "pinia";
-import { createWorld, removeEntity, type World } from "bitecs";
+import { addComponent, addEntity, createWorld, removeEntity, type World } from "bitecs";
 import { createObserverDeserializer, createObserverSerializer, createSnapshotDeserializer, createSnapshotSerializer, createSoADeserializer, createSoASerializer } from "bitecs/serialization";
 import { useNetworkState, type NetworkState } from "store";
 
 import { Networked, Position, Renderable, Rotation, Velocity } from "#game/ecs/components";
 import type { Scene } from "phaser";
+import type { GameplayScene } from "#game/scenes/gameplay-scene.js";
+import { InstantiatePrefab, PrefabType } from "#game/ecs/prefabs/index.js";
+import { Spritesheet } from "#game/types.js";
 
 type SerializationObserver  = () => ArrayBuffer;
 
@@ -16,7 +19,10 @@ type NetworkedGameState = {
 
 	scene? : Scene,
 
+	idMap : Map<number, number>,
+
 	// Serializers
+	snapshotSerializer? : SerializationObserver,
 	observerSerializers? : Map<string, SerializationObserver>,
 	soaSerializer? : any,
 
@@ -32,7 +38,7 @@ enum MessageType {
 	SOA
 }
 
-const components = [ Position, Rotation ]
+const components = [ Renderable, Position, Rotation ]
 
 const serializeMessage = ( _type : MessageType, _data : ArrayBuffer ) => {
 	const tagged = new Uint8Array( _data.byteLength + 1 );
@@ -47,7 +53,8 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 			playerEntities : new Map(),
 			world : createWorld(),
 			network : useNetworkState(),
-			channels : []
+			channels : [],
+			idMap : new Map()
 		} as NetworkedGameState;
 	},
 	actions : {
@@ -56,6 +63,7 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 			this.scene = _scene;
 
 			// Setup Serializers
+			this.snapshotSerializer = createSnapshotSerializer( this.world, components );
 			this.soaSerializer = createSoASerializer( components );
 
 			// Setup Deserializers
@@ -72,7 +80,38 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 
 				if( this.network.isHost )
 				{
-					// TODO
+
+					// Create player entity
+					// const playerEntity = InstantiatePrefab( this.world, PrefabType.NetworkedPlayer );
+					// addComponent( this.world,playerEntity, [Renderable] );
+
+					// Renderable.texture[ playerEntity ] = Spritesheet.SHIP;
+					// Renderable.frame[ playerEntity ] = 3;
+
+					// Position.x[ playerEntity ] = 30;//Math.round( Math.random() * this.scene!.cameras.main.width );
+					// Position.y[ playerEntity ] = 30;//Math.round( Math.random() * this.scene!.cameras.main.height );
+
+					// Rotation.value[ playerEntity ] = Math.random() * Math.PI * 2;
+
+					const playerEntity = addEntity( this.world );
+					addComponent( this.world, playerEntity, Networked )
+					addComponent( this.world, playerEntity, Position )
+					addComponent( this.world, playerEntity, Rotation )
+					addComponent( this.world, playerEntity, Renderable )
+
+					Position.x[playerEntity] = Math.random() * this.scene!.cameras.main.width;
+					Position.y[playerEntity] = Math.random() * this.scene!.cameras.main.height;
+
+					Rotation.value[playerEntity] = Math.random() * Math.PI * 2;
+					
+					Renderable.texture[playerEntity] = Spritesheet.SHIP;
+
+					this.playerEntities.set( _peerId, playerEntity );
+
+					this.observerSerializers?.set( _peerId, createObserverSerializer( this.world, Networked, components ) );
+
+					const snapshot = this.snapshotSerializer!();
+					_dataChannel.send( serializeMessage( MessageType.SNAPSHOT, snapshot ) );
 				}
 			}
 
@@ -105,7 +144,22 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 			const messageView = new Uint8Array( _data );
 			const type = messageView[0];
 
-			console.log( messageView, type )
+			const payload = messageView.slice(1).buffer as ArrayBuffer;
+
+			switch( type )
+			{
+				case MessageType.SNAPSHOT :
+					console.log( 'Recieved snapshot message' );
+					this.snapshotDeserializer( payload, this.idMap );
+					console.log(this.idMap);
+					break;
+
+				case MessageType.OBSERVER :
+					break;
+				
+				case MessageType.SOA :
+					break;
+			}
 		}
 	}
 } )
