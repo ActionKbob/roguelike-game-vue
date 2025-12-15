@@ -1,13 +1,10 @@
 import { defineStore, type Store } from "pinia";
-import { addComponent, addEntity, createWorld, removeEntity, type World } from "bitecs";
+import { createWorld, query, type World } from "bitecs";
 import { createObserverDeserializer, createObserverSerializer, createSnapshotDeserializer, createSnapshotSerializer, createSoADeserializer, createSoASerializer } from "bitecs/serialization";
 import { useNetworkState, type NetworkState } from "store";
 
-import { Networked, Position, Renderable, Rotation, Velocity } from "#game/ecs/components";
+import { Networked, Position, Renderable, Rotation } from "#game/ecs/components";
 import type { Scene } from "phaser";
-import type { GameplayScene } from "#game/scenes/gameplay-scene.js";
-import { InstantiatePrefab, PrefabType } from "#game/ecs/prefabs/index.js";
-import { Spritesheet } from "#game/types.js";
 
 type SerializationObserver  = () => ArrayBuffer;
 
@@ -15,7 +12,7 @@ type NetworkedGameState = {
 	playerEntities : Map<string, number>,
 	world : World,
 	network :  Store<'network-state'> & NetworkState,
-	channels : RTCDataChannel[],
+	channels : Map<string, RTCDataChannel>,
 
 	scene? : Scene,
 
@@ -23,7 +20,7 @@ type NetworkedGameState = {
 
 	// Serializers
 	snapshotSerializer? : SerializationObserver,
-	observerSerializers? : Map<string, SerializationObserver>,
+	observerSerializers : Map<string, SerializationObserver>,
 	soaSerializer? : any,
 
 	// Deserializers
@@ -53,9 +50,10 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 			playerEntities : new Map(),
 			world : createWorld(),
 			network : useNetworkState(),
-			channels : [],
-			idMap : new Map()
-		} as NetworkedGameState;
+			channels : new Map(),
+			idMap : new Map(),
+			observerSerializers : new Map()
+,		} as NetworkedGameState;
 	},
 	actions : {
 		setup : function( _scene : Scene )
@@ -73,43 +71,15 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 		},
 		setupDataChannel : function( _dataChannel : RTCDataChannel, _peerId : string )
 		{
-			this.channels.push( _dataChannel );
+			this.channels.set( _peerId, _dataChannel );
 
 			_dataChannel.onopen = () => {
 				console.log( `${ _dataChannel.label } channel with ${ _peerId } opened` );
 
 				if( this.network.isHost )
 				{
-
-					// Create player entity
-					// const playerEntity = InstantiatePrefab( this.world, PrefabType.NetworkedPlayer );
-					// addComponent( this.world,playerEntity, [Renderable] );
-
-					// Renderable.texture[ playerEntity ] = Spritesheet.SHIP;
-					// Renderable.frame[ playerEntity ] = 3;
-
-					// Position.x[ playerEntity ] = 30;//Math.round( Math.random() * this.scene!.cameras.main.width );
-					// Position.y[ playerEntity ] = 30;//Math.round( Math.random() * this.scene!.cameras.main.height );
-
-					// Rotation.value[ playerEntity ] = Math.random() * Math.PI * 2;
-
-					const playerEntity = addEntity( this.world );
-					addComponent( this.world, playerEntity, Networked )
-					addComponent( this.world, playerEntity, Position )
-					addComponent( this.world, playerEntity, Rotation )
-					addComponent( this.world, playerEntity, Renderable )
-
-					Position.x[playerEntity] = Math.random() * this.scene!.cameras.main.width;
-					Position.y[playerEntity] = Math.random() * this.scene!.cameras.main.height;
-
-					Rotation.value[playerEntity] = Math.random() * Math.PI * 2;
-					
-					Renderable.texture[playerEntity] = Spritesheet.SHIP;
-
-					this.playerEntities.set( _peerId, playerEntity );
-
 					this.observerSerializers?.set( _peerId, createObserverSerializer( this.world, Networked, components ) );
-
+					console.log()
 					const snapshot = this.snapshotSerializer!();
 					_dataChannel.send( serializeMessage( MessageType.SNAPSHOT, snapshot ) );
 				}
@@ -120,7 +90,7 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 
 				if( this.network.isHost )
 				{
-					// TODO
+					this._handleHostMessage();
 				}
 				else
 				{
@@ -138,7 +108,35 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 			}
 		},
 
+		update : function()
+		{
+			this._handleHostMessage();
+		},
+
 		// Handlers
+		_handleHostMessage : function()
+		{
+			for( const [ peerId, channel ] of this.channels )
+			{
+				if( channel.readyState === 'open' )
+				{					
+					const soaUpdates = this.soaSerializer( query( this.world, [ Networked, Position, Rotation ] ) );
+					channel.send( serializeMessage( MessageType.SOA, soaUpdates ) );
+
+					const observerSerializer = this.observerSerializers?.get( peerId );
+					if( observerSerializer )
+					{
+						const updates = observerSerializer();
+						console.log('host msg', updates.byteLength)
+						if( updates.byteLength > 0 )
+						{
+							channel.send( serializeMessage( MessageType.OBSERVER, updates ) );
+						}
+					}
+				}
+			}
+		},
+
 		_handleClientMessage : function( _peerId : string, _data : any )
 		{
 			const messageView = new Uint8Array( _data );
@@ -155,9 +153,13 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 					break;
 
 				case MessageType.OBSERVER :
+					console.log( 'Recieved observer message' );
+					this.observerDeserializer( payload, this.idMap );
 					break;
 				
 				case MessageType.SOA :
+					console.log( 'Recieved soa message' );
+					this.soaDeserializer( payload, this.idMap );
 					break;
 			}
 		}

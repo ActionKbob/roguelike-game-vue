@@ -8,7 +8,8 @@ import { useNetworkState } from "store";
 import { ShipControlSystem } from "#game/ecs/systems/ship-control-system.js";
 import { RotationSystem } from "#game/ecs/systems/rotation-system.js";
 import { VelocitySystem } from "#game/ecs/systems/velocity-system.js";
-import { getAllEntities } from "bitecs";
+import { addComponent, addEntity, getAllEntities } from "bitecs";
+import { Networked, PlayerInput, Position, Renderable, Rotation, ShipControls, Velocity } from "../ecs/components";
 
 
 export class GameplayScene extends Scene
@@ -56,11 +57,39 @@ export class GameplayScene extends Scene
 			{ name : "rotationSystem", func : RotationSystem( this.World ) },
 			{ name : "velocitySystem", func : VelocitySystem( this.World ) },
 		] );
+
+		const playerEntity = addEntity( this.World );
+		addComponent( this.World, playerEntity, Networked )
+		addComponent( this.World, playerEntity, Position )
+		addComponent( this.World, playerEntity, Rotation )
+		addComponent( this.World, playerEntity, Renderable )
+		addComponent( this.World, playerEntity, Velocity )
+		addComponent( this.World, playerEntity, PlayerInput )
+		addComponent( this.World, playerEntity, ShipControls )
+
+		Position.x[playerEntity] = Math.random() * 200;
+		Position.y[playerEntity] = Math.random() * 200;
+
+		Rotation.value[playerEntity] = Math.random() * Math.PI * 2;
+		
+		Renderable.texture[playerEntity] = Spritesheet.SHIP;
+		Renderable.frame[playerEntity] = 3;
+
+		Velocity.value.x[playerEntity] = 0;
+		Velocity.value.y[playerEntity] = 0;
+		Velocity.acceleration.x[playerEntity] = 0;
+		Velocity.acceleration.y[playerEntity] = 0;
+		Velocity.friction[playerEntity] = 0;
 	}
 
 	update( time : number, delta : number ) : void {
 		this.deltaTime = delta / 100;
 		this.systems.run( this );
+
+		if( this.networkState.isHost )
+			this.gameState.update();
+		else
+			this.gameState.test();
 	}
 
 	handleKeyDown = ( _event : KeyboardEvent ) : void => {
