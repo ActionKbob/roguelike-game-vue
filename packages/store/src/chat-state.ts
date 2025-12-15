@@ -4,6 +4,7 @@ import { defineStore, type Store } from "pinia";
 type ChatMessage = {
 	sender : string,
 	message : string
+	displayText : string,
 }
 
 type ChatState = {
@@ -31,7 +32,8 @@ export const useChatState = defineStore( 'chat-state', {
 				console.log( `${ _dataChannel.label } message from ${ _peerId }:`, event.data );
 
 				const newMessage : ChatMessage = JSON.parse( event.data );
-				
+				newMessage.displayText = `${ this.network.peers.get( _peerId )?.displayName }: ${ newMessage.message }`;
+
 				this.messages.push( newMessage );
 
 				if( this.network.isHost )
@@ -49,14 +51,14 @@ export const useChatState = defineStore( 'chat-state', {
 		},
 		sendMessage : function( _message : string )
 		{
-
 			if( !_message || _message.length === 0 )
 				return;
 
 			const newMessage = {
 				sender : this.network.clientId,
 				message : _message
-			} as ChatMessage
+			} as ChatMessage;
+			newMessage.displayText = `${ this.network.peers.get( this.network.clientId! )?.displayName }: ${ newMessage.message }`;
 
 			if( this.network.isHost )
 				this.messages.push( newMessage );

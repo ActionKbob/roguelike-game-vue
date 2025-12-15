@@ -20,7 +20,7 @@ import { useChatState } from 'store/src/chat-state';
 <template>
 	<div class="absolute bottom-0 m-8 w-[400px]">
 		<div class="text-white p-2">
-			<p :class="{ 'text-right' :  sender === networkState.clientId }" v-for="{ sender, message } in chatState.messages">Player {{ networkState.getPeerIndex( sender ) + 1 }}: {{ message }}</p>
+			<p :class="{ 'text-right' :  sender === networkState.clientId }" v-for="{ sender, displayText } in chatState.messages">{{ displayText }}</p>
 		</div>
 		<form v-on:submit="handleChatSubmit">
 			<div class="flex gap-2">

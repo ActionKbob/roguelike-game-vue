@@ -73,9 +73,9 @@ const server = Bun.serve({
 					break;
 
 				// FORWARD SIGNALING MESSAGES
-				case NETWORK_MESSAGE_TYPE.CANDIDATE :
 				case NETWORK_MESSAGE_TYPE.OFFER :
 				case NETWORK_MESSAGE_TYPE.ANSWER :
+				case NETWORK_MESSAGE_TYPE.CANDIDATE :
 					console.log( `Forwarding message of ${ type } from ${client}` )
 					if( client )
 					{

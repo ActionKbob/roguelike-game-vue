@@ -80,22 +80,24 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 				{
 					this.observerSerializers?.set( _peerId, createObserverSerializer( this.world, Networked, components ) );
 					console.log()
-					const snapshot = this.snapshotSerializer!();
-					_dataChannel.send( serializeMessage( MessageType.SNAPSHOT, snapshot ) );
+					
 				}
+
+				const snapshot = this.snapshotSerializer!();
+				_dataChannel.send( serializeMessage( MessageType.SNAPSHOT, snapshot ) );
 			}
 
 			_dataChannel.onmessage = async ( event : MessageEvent ) => {
-				console.log( `${ _dataChannel.label } message from ${ _peerId }:`, event.data );
+				// console.log( `${ _dataChannel.label } message from ${ _peerId }:`, event.data );
 
 				if( this.network.isHost )
 				{
 					this._handleHostMessage();
 				}
-				else
-				{
-					this._handleClientMessage( _peerId, event.data );
-				}
+				// else
+				// {
+				// }
+				this._handleClientMessage( _peerId, event.data );
 			}
 
 			_dataChannel.close = () => {
@@ -147,18 +149,18 @@ export const useNetworkedGameState = defineStore( 'networked-game-state', {
 			switch( type )
 			{
 				case MessageType.SNAPSHOT :
-					console.log( 'Recieved snapshot message' );
+					// console.log( 'Recieved snapshot message' );
 					this.snapshotDeserializer( payload, this.idMap );
 					console.log(this.idMap);
 					break;
 
 				case MessageType.OBSERVER :
-					console.log( 'Recieved observer message' );
+					// console.log( 'Recieved observer message' );
 					this.observerDeserializer( payload, this.idMap );
 					break;
 				
 				case MessageType.SOA :
-					console.log( 'Recieved soa message' );
+					// console.log( 'Recieved soa message' );
 					this.soaDeserializer( payload, this.idMap );
 					break;
 			}

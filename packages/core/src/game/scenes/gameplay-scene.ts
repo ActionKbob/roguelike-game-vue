@@ -79,17 +79,26 @@ export class GameplayScene extends Scene
 		Velocity.value.y[playerEntity] = 0;
 		Velocity.acceleration.x[playerEntity] = 0;
 		Velocity.acceleration.y[playerEntity] = 0;
-		Velocity.friction[playerEntity] = 0;
+		Velocity.friction[playerEntity] = 0.1;
 	}
 
+	_accumulator : number = 0;
+	TICK_RATE : number = 30;
+	FIXED_DELTA : number = 1000 / this.TICK_RATE;
 	update( time : number, delta : number ) : void {
 		this.deltaTime = delta / 100;
 		this.systems.run( this );
 
-		if( this.networkState.isHost )
+
+		this._accumulator += delta;
+
+		if( this._accumulator >= this.FIXED_DELTA )
+		{
 			this.gameState.update();
-		else
-			this.gameState.test();
+			this._accumulator -= this.FIXED_DELTA;
+			console.log('update');
+		}
+
 	}
 
 	handleKeyDown = ( _event : KeyboardEvent ) : void => {

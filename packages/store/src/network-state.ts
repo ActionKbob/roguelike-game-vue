@@ -1,4 +1,3 @@
-import { useChatState } from "#chat-state.js";
 import { defineStore } from "pinia";
 import { NETWORK_MESSAGE_TYPE, type ClientPeer, type NetworkMessage, type RTCMessageBody, type ServerPeer, type SignalingMessage } from 'shared';
 
@@ -88,10 +87,12 @@ export const useNetworkState = defineStore( 'network-state', {
 				console.error( `Error connecting to server: ${ error }` );
 			}
 		},
+
 		disconnect : function()
 		{
 			this.socket?.close();
 		},
+
 		handleMessage : async function( { data } : MessageEvent )
 		{
 			const { type, body } = JSON.parse( data );
@@ -128,7 +129,9 @@ export const useNetworkState = defineStore( 'network-state', {
 					const newClientId = body.data.clientId;
 
 					if( newClientId !== this.clientId )
+					{
 						this.peers.set( newClientId, { id : newClientId } );
+					}
 
 					if( this.isHost )
 						this._setupPeerConnection( newClientId );
